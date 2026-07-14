@@ -21,7 +21,8 @@ export function VentasPorMesChart({ data }: VentasPorMesChartProps) {
   );
 
   return (
-    <div>
+    <div className="table-scroll">
+      <div style={{ minWidth: 360 }}>
       <div
         style={{
           display: "flex",
@@ -85,6 +86,7 @@ export function VentasPorMesChart({ data }: VentasPorMesChartProps) {
             {formatMes(d.mes)}
           </div>
         ))}
+      </div>
       </div>
     </div>
   );

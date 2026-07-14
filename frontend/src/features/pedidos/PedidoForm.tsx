@@ -127,7 +127,7 @@ export function PedidoForm({ pedido, onClose, onSaved }: PedidoFormProps) {
           {pedido ? `Editar pedido ${pedido.nro_pedido}` : "Nuevo pedido"}
         </h3>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div className="form-grid">
           <div>
             <label htmlFor="cliente_id">Cliente</label>
             <select
@@ -193,6 +193,7 @@ export function PedidoForm({ pedido, onClose, onSaved }: PedidoFormProps) {
             </button>
           </div>
 
+          <div className="table-scroll">
           <table>
             <thead>
               <tr>
@@ -264,6 +265,7 @@ export function PedidoForm({ pedido, onClose, onSaved }: PedidoFormProps) {
               })}
             </tbody>
           </table>
+          </div>
 
           <div style={{ textAlign: "right", fontWeight: 700, marginTop: 8, color: colors.purpleDark }}>
             Total: ₲ {total.toLocaleString("es-PY")}

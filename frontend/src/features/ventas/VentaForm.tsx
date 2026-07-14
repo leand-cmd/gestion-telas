@@ -67,7 +67,7 @@ export function VentaForm({ onClose, onSaved }: VentaFormProps) {
       >
         <h3 style={{ margin: 0, color: colors.purpleDark }}>Nueva venta</h3>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div className="form-grid">
           <div style={{ gridColumn: "1 / -1" }}>
             <label htmlFor="cliente_id">Cliente</label>
             <select

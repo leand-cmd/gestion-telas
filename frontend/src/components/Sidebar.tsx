@@ -21,11 +21,17 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Usuarios", path: "/usuarios", adminOnly: true },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+export function Sidebar({ open, onClose }: SidebarProps) {
   const { usuario } = useAuth();
 
   return (
     <aside
+      className={`sidebar ${open ? "sidebar--open" : ""}`}
       style={{
         width: 240,
         background: colors.white,
@@ -44,6 +50,7 @@ export function Sidebar() {
         <NavLink
           key={item.path}
           to={item.path}
+          onClick={onClose}
           style={({ isActive }) => ({
             padding: "12px 16px",
             borderRadius: 14,

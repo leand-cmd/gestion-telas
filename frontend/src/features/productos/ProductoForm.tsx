@@ -89,7 +89,7 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
           {producto ? "Editar producto" : "Nuevo producto"}
         </h3>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div className="form-grid">
           <div>
             <label htmlFor="cod_sku">Cod SKU</label>
             <input

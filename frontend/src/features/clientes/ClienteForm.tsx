@@ -76,7 +76,7 @@ export function ClienteForm({ cliente, onClose, onSaved }: ClienteFormProps) {
           {cliente ? "Editar cliente" : "Nuevo cliente"}
         </h3>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div className="form-grid">
           <div>
             <label htmlFor="ruc">RUC</label>
             <input

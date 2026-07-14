@@ -71,7 +71,7 @@ export function VisitaForm({ onClose, onSaved }: VisitaFormProps) {
       >
         <h3 style={{ margin: 0, color: colors.purpleDark }}>Programar visita</h3>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div className="form-grid">
           <div style={{ gridColumn: "1 / -1" }}>
             <label htmlFor="cliente_id">Cliente</label>
             <select

@@ -6,7 +6,7 @@ import { VentasPorMesChart } from "./VentasPorMesChart";
 
 function KpiCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="card" style={{ flex: 1, minWidth: 180 }}>
+    <div className="card">
       <div style={{ fontSize: 13, color: colors.grayNeutral }}>{label}</div>
       <div style={{ fontSize: 28, fontWeight: 700, color: colors.purpleDark }}>{value}</div>
     </div>
@@ -24,7 +24,7 @@ export function DashboardPage() {
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       <h2 style={{ margin: 0, color: colors.purpleDark }}>Dashboard</h2>
 
-      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+      <div className="dashboard-kpis">
         <KpiCard
           label="Ventas del mes"
           value={`₲ ${data.ventas_mes_actual.toLocaleString("es-PY")}`}
@@ -39,7 +39,7 @@ export function DashboardPage() {
         <VentasPorMesChart data={data.ventas_por_mes} />
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+      <div className="dashboard-grid">
         <div className="card">
           <h3 style={{ margin: "0 0 8px", color: colors.purpleDark }}>Stock bajo mínimo</h3>
           {data.stock_bajo.length === 0 ? (
