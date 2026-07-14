@@ -28,7 +28,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           ☰
         </button>
         <img
-          src="/assets/asesora-placeholder.svg"
+          src="/img/asesora.jpg"
           alt=""
           style={{ width: 48, height: 48, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.6)", flexShrink: 0 }}
         />
