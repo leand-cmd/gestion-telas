@@ -30,7 +30,15 @@ export function Header({ onMenuClick }: HeaderProps) {
         <img
           src="/img/asesora.jpg"
           alt=""
-          style={{ width: 48, height: 48, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.6)", flexShrink: 0 }}
+          style={{
+            width: 64,
+            height: 64,
+            borderRadius: "50%",
+            objectFit: "cover",
+            objectPosition: "center",
+            border: "2px solid rgba(255,255,255,0.6)",
+            flexShrink: 0,
+          }}
         />
         <div style={{ minWidth: 0 }}>
           <div className="header-name" style={{ fontWeight: 700, fontSize: 15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>

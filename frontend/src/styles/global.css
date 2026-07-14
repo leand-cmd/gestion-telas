@@ -257,6 +257,11 @@ tr:hover td {
     font-size: 13px !important;
   }
 
+  .header-bar img {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
   .form-grid,
   .split-layout {
     grid-template-columns: 1fr;
