@@ -1,64 +1,88 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
 
-import { Column, DataTable } from "../../components/DataTable";
-import { ConfirmDialog } from "../../components/ConfirmDialog";
-import { Pagination } from "../../components/Pagination";
 import type { Visita } from "../../api/types";
 import { colors } from "../../theme/colors";
+import { fetchClientes } from "../clientes/clientesApi";
+import { addDays, NOMBRES_MES, startOfWeekMonday, toISODate } from "./calendarUtils";
+import { VisitaDetalleModal } from "./VisitaDetalleModal";
 import { VisitaForm } from "./VisitaForm";
 import { VisitaResultadoForm } from "./VisitaResultadoForm";
-import { deleteVisita, fetchVisitas } from "./visitasApi";
+import { VisitasCalendar } from "./VisitasCalendar";
+import { ESTADO_COLORS, ESTADO_LABELS } from "./visitaEstadoColors";
+import { fetchVisitas } from "./visitasApi";
+
+type ViewMode = "mes" | "semana";
 
 export function VisitasList() {
-  const [page, setPage] = useState(1);
-  const [desde, setDesde] = useState("");
-  const [hasta, setHasta] = useState("");
+  const [anchorDate, setAnchorDate] = useState(new Date());
+  const [viewMode, setViewMode] = useState<ViewMode>("mes");
+  const [clienteFiltro, setClienteFiltro] = useState<number | "">("");
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [formOpen, setFormOpen] = useState(false);
+  const [detalleVisita, setDetalleVisita] = useState<Visita | null>(null);
   const [registrandoResultado, setRegistrandoResultado] = useState<Visita | null>(null);
-  const [deleting, setDeleting] = useState<Visita | null>(null);
 
   const queryClient = useQueryClient();
 
+  const { desde, hasta } = useMemo(() => {
+    if (viewMode === "semana") {
+      const inicio = startOfWeekMonday(anchorDate);
+      return { desde: toISODate(inicio), hasta: toISODate(addDays(inicio, 6)) };
+    }
+    const primerDiaMes = new Date(anchorDate.getFullYear(), anchorDate.getMonth(), 1);
+    const inicio = startOfWeekMonday(primerDiaMes);
+    return { desde: toISODate(inicio), hasta: toISODate(addDays(inicio, 41)) };
+  }, [anchorDate, viewMode]);
+
+  const { data: clientesData } = useQuery({
+    queryKey: ["clientes-select"],
+    queryFn: () => fetchClientes({ page: 1, per_page: 200 }),
+  });
+
   const { data, isLoading } = useQuery({
-    queryKey: ["visitas", { page, desde, hasta }],
+    queryKey: ["visitas", { desde, hasta, clienteFiltro }],
     queryFn: () =>
-      fetchVisitas({ page, per_page: 10, desde: desde || undefined, hasta: hasta || undefined }),
+      fetchVisitas({
+        desde,
+        hasta,
+        cliente_id: clienteFiltro || undefined,
+        per_page: 200,
+      }),
   });
 
   const refetch = () => queryClient.invalidateQueries({ queryKey: ["visitas"] });
 
-  const columns: Column<Visita>[] = [
-    { header: "Fecha", render: (v) => v.fecha },
-    { header: "Hora", render: (v) => v.hora },
-    { header: "Cliente", render: (v) => v.cliente?.razon_social ?? "-" },
-    { header: "Asesor", render: (v) => v.asesor?.nombre ?? "-" },
-    { header: "Propósito", render: (v) => v.proposito ?? "-" },
-    {
-      header: "Estado",
-      render: (v) => (
-        <span className={`badge ${v.estado === "realizada" ? "badge-active" : "badge-inactive"}`}>
-          {v.estado}
-        </span>
-      ),
-    },
-    {
-      header: "Acciones",
-      render: (v) => (
-        <div style={{ display: "flex", gap: 8 }}>
-          {v.estado === "programada" && (
-            <button className="btn btn-primary" onClick={() => setRegistrandoResultado(v)}>
-              Registrar resultado
-            </button>
-          )}
-          <button className="btn btn-danger" onClick={() => setDeleting(v)}>
-            Eliminar
-          </button>
-        </div>
-      ),
-    },
-  ];
+  const visitas = data?.items ?? [];
+  const visitasDelDia = selectedDate
+    ? visitas
+        .filter((v) => v.fecha === toISODate(selectedDate))
+        .slice()
+        .sort((a, b) => a.hora.localeCompare(b.hora))
+    : [];
+
+  const cambiarPeriodo = (direccion: 1 | -1) => {
+    if (viewMode === "semana") {
+      setAnchorDate((d) => addDays(d, 7 * direccion));
+    } else {
+      setAnchorDate((d) => new Date(d.getFullYear(), d.getMonth() + direccion, 1));
+    }
+  };
+
+  const irAHoy = () => {
+    const hoy = new Date();
+    setAnchorDate(hoy);
+    setSelectedDate(hoy);
+  };
+
+  const tituloPeriodo =
+    viewMode === "mes"
+      ? `${NOMBRES_MES[anchorDate.getMonth()]} ${anchorDate.getFullYear()}`
+      : (() => {
+          const inicio = startOfWeekMonday(anchorDate);
+          const fin = addDays(inicio, 6);
+          return `${inicio.getDate()}/${inicio.getMonth() + 1} — ${fin.getDate()}/${fin.getMonth() + 1}`;
+        })();
 
   return (
     <div>
@@ -73,40 +97,118 @@ export function VisitasList() {
         }}
       >
         <h2 style={{ margin: 0, color: colors.purpleDark }}>Visitas y Agenda</h2>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-          <input
-            type="date"
-            value={desde}
-            onChange={(e) => {
-              setDesde(e.target.value);
-              setPage(1);
-            }}
-          />
-          <input
-            type="date"
-            value={hasta}
-            onChange={(e) => {
-              setHasta(e.target.value);
-              setPage(1);
-            }}
-          />
-          <button className="btn btn-primary" onClick={() => setFormOpen(true)}>
-            + Programar Visita
+        <button className="btn btn-primary" onClick={() => setFormOpen(true)}>
+          + Programar Visita
+        </button>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 16,
+          flexWrap: "wrap",
+          gap: 12,
+        }}
+      >
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <button className="btn btn-secondary" onClick={() => cambiarPeriodo(-1)}>
+            ‹
           </button>
+          <span style={{ fontWeight: 700, color: colors.purpleDark, minWidth: 140, textAlign: "center" }}>
+            {tituloPeriodo}
+          </span>
+          <button className="btn btn-secondary" onClick={() => cambiarPeriodo(1)}>
+            ›
+          </button>
+          <button className="btn btn-secondary" onClick={irAHoy}>
+            Hoy
+          </button>
+        </div>
+
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <select value={viewMode} onChange={(e) => setViewMode(e.target.value as ViewMode)}>
+            <option value="mes">Mes</option>
+            <option value="semana">Semana</option>
+          </select>
+          <select
+            value={clienteFiltro}
+            onChange={(e) => setClienteFiltro(e.target.value ? Number(e.target.value) : "")}
+          >
+            <option value="">Todos los clientes</option>
+            {(clientesData?.items ?? []).map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.razon_social}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
-      <div className="card">
-        <DataTable
-          columns={columns}
-          rows={data?.items ?? []}
-          rowKey={(v) => v.id}
-          loading={isLoading}
-          emptyMessage="No se encontraron visitas"
-        />
-        {data && (
-          <Pagination page={data.page} pages={data.pages} total={data.total} onPageChange={setPage} />
-        )}
+      <div className="split-layout">
+        <div className="card">
+          {isLoading ? (
+            <div style={{ padding: 40, textAlign: "center", color: colors.grayNeutral }}>Cargando...</div>
+          ) : (
+            <VisitasCalendar
+              anchorDate={anchorDate}
+              viewMode={viewMode}
+              visitas={visitas}
+              selectedDate={selectedDate}
+              onSelectDate={setSelectedDate}
+              onSelectVisita={setDetalleVisita}
+            />
+          )}
+        </div>
+
+        <div className="card">
+          <h3 style={{ margin: "0 0 12px", color: colors.purpleDark, fontSize: 15 }}>
+            {selectedDate
+              ? `Visitas del ${selectedDate.getDate()}/${selectedDate.getMonth() + 1}`
+              : "Seleccioná un día"}
+          </h3>
+          {visitasDelDia.length === 0 ? (
+            <p style={{ fontSize: 13, color: colors.grayNeutral, margin: 0 }}>
+              No hay visitas programadas para este día.
+            </p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {visitasDelDia.map((v) => {
+                const c = ESTADO_COLORS[v.estado];
+                return (
+                  <div
+                    key={v.id}
+                    onClick={() => setDetalleVisita(v)}
+                    style={{
+                      padding: 10,
+                      borderRadius: 12,
+                      background: colors.grayLight,
+                      cursor: "pointer",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {v.hora} — {v.cliente?.razon_social ?? "-"}
+                      </div>
+                      <div style={{ fontSize: 12, color: colors.grayNeutral }}>{v.proposito ?? "-"}</div>
+                    </div>
+                    <span
+                      className="badge"
+                      style={{ background: c.bg, color: c.text, flexShrink: 0 }}
+                    >
+                      {ESTADO_LABELS[v.estado]}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
       {formOpen && (
@@ -119,6 +221,18 @@ export function VisitasList() {
         />
       )}
 
+      {detalleVisita && (
+        <VisitaDetalleModal
+          visita={detalleVisita}
+          onClose={() => setDetalleVisita(null)}
+          onChanged={refetch}
+          onRegistrarResultado={(v) => {
+            setDetalleVisita(null);
+            setRegistrandoResultado(v);
+          }}
+        />
+      )}
+
       {registrandoResultado && (
         <VisitaResultadoForm
           visita={registrandoResultado}
@@ -126,26 +240,6 @@ export function VisitasList() {
           onSaved={() => {
             setRegistrandoResultado(null);
             refetch();
-          }}
-        />
-      )}
-
-      {deleting && (
-        <ConfirmDialog
-          open
-          title="Eliminar visita"
-          message={`¿Seguro que deseas eliminar la visita del ${deleting.fecha}?`}
-          onCancel={() => setDeleting(null)}
-          onConfirm={async () => {
-            try {
-              await deleteVisita(deleting.id);
-              toast.success("Visita eliminada");
-              refetch();
-            } catch {
-              toast.error("No se pudo eliminar la visita");
-            } finally {
-              setDeleting(null);
-            }
           }}
         />
       )}

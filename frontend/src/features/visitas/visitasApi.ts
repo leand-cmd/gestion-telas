@@ -5,6 +5,7 @@ export interface VisitaFilters {
   desde?: string;
   hasta?: string;
   asesor_id?: number;
+  cliente_id?: number;
   estado?: string;
   page?: number;
   per_page?: number;
@@ -51,4 +52,9 @@ export async function registrarResultado(id: number, input: VisitaResultadoInput
 
 export async function deleteVisita(id: number) {
   await apiClient.delete(`/visitas/${id}`);
+}
+
+export async function cancelarVisita(id: number) {
+  const { data } = await apiClient.patch<Visita>(`/visitas/${id}/cancelar`);
+  return data;
 }

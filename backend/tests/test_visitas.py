@@ -63,3 +63,45 @@ def test_filtro_por_rango_de_fechas(client, auth_headers):
         "/api/visitas?desde=2020-01-01&hasta=2020-12-31", headers=auth_headers
     )
     assert resp_vacio.get_json()["total"] == 0
+
+
+def test_filtro_por_cliente(client, auth_headers):
+    cliente_id, asesor_id = crear_cliente_y_asesor(client, auth_headers)
+    otro_cliente_id = client.post(
+        "/api/clientes", json=cliente_payload(ruc="80077777-2"), headers=auth_headers
+    ).get_json()["id"]
+    client.post("/api/visitas", json=visita_payload(cliente_id, asesor_id), headers=auth_headers)
+    client.post(
+        "/api/visitas", json=visita_payload(otro_cliente_id, asesor_id), headers=auth_headers
+    )
+
+    resp = client.get(f"/api/visitas?cliente_id={cliente_id}", headers=auth_headers)
+    data = resp.get_json()
+    assert data["total"] == 1
+    assert data["items"][0]["cliente_id"] == cliente_id
+
+
+def test_cancelar_visita(client, auth_headers):
+    cliente_id, asesor_id = crear_cliente_y_asesor(client, auth_headers)
+    visita = client.post(
+        "/api/visitas", json=visita_payload(cliente_id, asesor_id), headers=auth_headers
+    ).get_json()
+
+    resp = client.patch(f"/api/visitas/{visita['id']}/cancelar", headers=auth_headers)
+    assert resp.status_code == 200
+    assert resp.get_json()["estado"] == "cancelada"
+
+
+def test_no_se_puede_cancelar_visita_realizada(client, auth_headers):
+    cliente_id, asesor_id = crear_cliente_y_asesor(client, auth_headers)
+    visita = client.post(
+        "/api/visitas", json=visita_payload(cliente_id, asesor_id), headers=auth_headers
+    ).get_json()
+    client.patch(
+        f"/api/visitas/{visita['id']}/resultado",
+        json={"resultado": "Interesado"},
+        headers=auth_headers,
+    )
+
+    resp = client.patch(f"/api/visitas/{visita['id']}/cancelar", headers=auth_headers)
+    assert resp.status_code == 409

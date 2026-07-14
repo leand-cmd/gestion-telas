@@ -4,6 +4,8 @@ import type { PaginatedResponse, Venta, VentaEstadoPago } from "../../api/types"
 export interface VentaFilters {
   estado_pago?: string;
   cliente_id?: number;
+  desde?: string;
+  hasta?: string;
   page?: number;
   per_page?: number;
 }

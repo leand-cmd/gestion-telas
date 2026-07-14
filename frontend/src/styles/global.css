@@ -204,6 +204,13 @@ tr:hover td {
   gap: 16px;
 }
 
+.split-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
 .table-scroll {
   overflow-x: auto;
 }
@@ -250,7 +257,8 @@ tr:hover td {
     font-size: 13px !important;
   }
 
-  .form-grid {
+  .form-grid,
+  .split-layout {
     grid-template-columns: 1fr;
   }
 

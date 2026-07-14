@@ -33,6 +33,10 @@ def listar_visitas():
     if asesor_id:
         query = query.filter(Visita.asesor_id == int(asesor_id))
 
+    cliente_id = request.args.get("cliente_id")
+    if cliente_id:
+        query = query.filter(Visita.cliente_id == int(cliente_id))
+
     estado = request.args.get("estado")
     if estado:
         query = query.filter(Visita.estado == estado)
@@ -115,6 +119,18 @@ def registrar_resultado_visita(visita_id):
         setattr(visita, key, value)
     visita.estado = "realizada"
 
+    db.session.commit()
+    return jsonify(visita.to_dict())
+
+
+@visitas_bp.patch("/<int:visita_id>/cancelar")
+@jwt_required()
+def cancelar_visita(visita_id):
+    visita = Visita.query.get_or_404(visita_id)
+    if visita.estado == "realizada":
+        return jsonify({"error": "No se puede cancelar una visita ya realizada"}), 409
+
+    visita.estado = "cancelada"
     db.session.commit()
     return jsonify(visita.to_dict())
 

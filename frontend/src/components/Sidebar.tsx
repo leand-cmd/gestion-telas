@@ -17,6 +17,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Ventas", path: "/ventas" },
   { label: "Stock", path: "/stock" },
   { label: "Visitas y Agenda", path: "/visitas" },
+  { label: "Historial de Compras", path: "/historial" },
   { label: "Importación Masiva", path: "/importacion" },
   { label: "Usuarios", path: "/usuarios", adminOnly: true },
 ];
