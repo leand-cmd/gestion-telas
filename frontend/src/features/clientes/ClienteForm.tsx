@@ -56,24 +56,8 @@ export function ClienteForm({ cliente, onClose, onSaved }: ClienteFormProps) {
   };
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(43,43,56,0.4)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 1000,
-        overflowY: "auto",
-        padding: 24,
-      }}
-    >
-      <form
-        onSubmit={handleSubmit}
-        className="card"
-        style={{ width: "100%", maxWidth: 640, display: "flex", flexDirection: "column", gap: 14 }}
-      >
+    <div className="modal-overlay">
+      <form onSubmit={handleSubmit} className="card modal-card" style={{ maxWidth: 640 }}>
         <h3 style={{ margin: 0, color: colors.purpleDark }}>
           {cliente ? "Editar cliente" : "Nuevo cliente"}
         </h3>

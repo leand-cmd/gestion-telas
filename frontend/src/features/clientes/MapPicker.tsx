@@ -49,7 +49,7 @@ export function MapPicker({ latitude, longitude, onChange }: MapPickerProps) {
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       <label>Ubicación</label>
 
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
+      <div className="geo-controls">
         <div style={{ flex: 1, minWidth: 120 }}>
           <label htmlFor="latitude">Latitud</label>
           <input
@@ -88,7 +88,7 @@ export function MapPicker({ latitude, longitude, onChange }: MapPickerProps) {
               También podés hacer clic en el mapa para marcar la ubicación.
             </p>
             <GoogleMap
-              mapContainerStyle={{ width: "100%", height: 280, borderRadius: 16 }}
+              mapContainerClassName="map-picker-map"
               center={position}
               zoom={13}
               onClick={(e) => {

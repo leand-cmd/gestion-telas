@@ -67,24 +67,8 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
   };
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(43,43,56,0.4)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 1000,
-        overflowY: "auto",
-        padding: 24,
-      }}
-    >
-      <form
-        onSubmit={handleSubmit}
-        className="card"
-        style={{ width: "100%", maxWidth: 680, display: "flex", flexDirection: "column", gap: 14 }}
-      >
+    <div className="modal-overlay">
+      <form onSubmit={handleSubmit} className="card modal-card" style={{ maxWidth: 680 }}>
         <h3 style={{ margin: 0, color: colors.purpleDark }}>
           {producto ? "Editar producto" : "Nuevo producto"}
         </h3>

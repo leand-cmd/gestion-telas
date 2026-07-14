@@ -20,18 +20,8 @@ export function ConfirmDialog({
   if (!open) return null;
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(43,43,56,0.4)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 1000,
-      }}
-    >
-      <div className="card" style={{ width: 360 }}>
+    <div className="modal-overlay">
+      <div className="card" style={{ width: 360, maxWidth: "100%" }}>
         <h3 style={{ marginTop: 0, color: colors.purpleDark }}>{title}</h3>
         <p style={{ color: "#4a4a5a", fontSize: 14 }}>{message}</p>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>

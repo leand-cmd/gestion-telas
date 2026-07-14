@@ -19,22 +19,8 @@ export function VentaDetalleModal({ venta, onClose }: VentaDetalleModalProps) {
   });
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(43,43,56,0.4)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 1000,
-        padding: 24,
-      }}
-    >
-      <div
-        className="card"
-        style={{ width: "100%", maxWidth: 560, display: "flex", flexDirection: "column", gap: 12 }}
-      >
+    <div className="modal-overlay">
+      <div className="card modal-card" style={{ maxWidth: 560 }}>
         <h3 style={{ margin: 0, color: colors.purpleDark }}>Venta {venta.nro_factura}</h3>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, fontSize: 13 }}>

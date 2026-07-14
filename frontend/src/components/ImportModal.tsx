@@ -32,18 +32,8 @@ export function ImportModal({ title, onImport, onClose, onImported }: ImportModa
   };
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(43,43,56,0.4)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 1000,
-      }}
-    >
-      <div className="card" style={{ width: 460 }}>
+    <div className="modal-overlay">
+      <div className="card modal-card" style={{ maxWidth: 460 }}>
         <h3 style={{ marginTop: 0, color: colors.purpleDark }}>{title}</h3>
         <p style={{ fontSize: 13, color: colors.grayNeutral }}>
           Archivos soportados: .csv, .xlsx, .xls

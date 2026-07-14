@@ -38,23 +38,8 @@ export function VisitaResultadoForm({ visita, onClose, onSaved }: VisitaResultad
   };
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(43,43,56,0.4)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 1000,
-        padding: 24,
-      }}
-    >
-      <form
-        onSubmit={handleSubmit}
-        className="card"
-        style={{ width: "100%", maxWidth: 480, display: "flex", flexDirection: "column", gap: 14 }}
-      >
+    <div className="modal-overlay">
+      <form onSubmit={handleSubmit} className="card modal-card" style={{ maxWidth: 480 }}>
         <h3 style={{ margin: 0, color: colors.purpleDark }}>
           Resultado de visita — {visita.cliente?.razon_social}
         </h3>

@@ -52,23 +52,8 @@ export function VisitaForm({ onClose, onSaved }: VisitaFormProps) {
   };
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(43,43,56,0.4)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 1000,
-        padding: 24,
-      }}
-    >
-      <form
-        onSubmit={handleSubmit}
-        className="card"
-        style={{ width: "100%", maxWidth: 520, display: "flex", flexDirection: "column", gap: 14 }}
-      >
+    <div className="modal-overlay">
+      <form onSubmit={handleSubmit} className="card modal-card" style={{ maxWidth: 520 }}>
         <h3 style={{ margin: 0, color: colors.purpleDark }}>Programar visita</h3>
 
         <div className="form-grid">

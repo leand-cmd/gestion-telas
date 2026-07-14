@@ -44,21 +44,8 @@ export function VisitaDetalleModal({
   };
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(43,43,56,0.4)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 1000,
-        padding: 24,
-      }}
-    >
-      <div
-        className="card"
-        style={{ width: "100%", maxWidth: 460, display: "flex", flexDirection: "column", gap: 12 }}
+    <div className="modal-overlay">
+      <div className="card modal-card" style={{ maxWidth: 460 }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <h3 style={{ margin: 0, color: colors.purpleDark }}>{visita.cliente?.razon_social}</h3>
