@@ -5,6 +5,7 @@ import { colors } from "../theme/colors";
 export interface Column<T> {
   header: string;
   render: (row: T) => ReactNode;
+  truncate?: boolean;
 }
 
 interface DataTableProps<T> {
@@ -39,7 +40,7 @@ export function DataTable<T>({
   }
 
   return (
-    <div style={{ overflowX: "auto" }}>
+    <div className="table-scroll">
       <table>
         <thead>
           <tr>
@@ -52,7 +53,9 @@ export function DataTable<T>({
           {rows.map((row) => (
             <tr key={rowKey(row)}>
               {columns.map((col) => (
-                <td key={col.header}>{col.render(row)}</td>
+                <td key={col.header} className={col.truncate ? "td-truncate" : undefined}>
+                  {col.render(row)}
+                </td>
               ))}
             </tr>
           ))}

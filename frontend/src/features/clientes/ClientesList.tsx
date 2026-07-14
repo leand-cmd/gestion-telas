@@ -35,10 +35,10 @@ export function ClientesList() {
 
   const columns: Column<Cliente>[] = [
     { header: "RUC", render: (c) => c.ruc },
-    { header: "Razón Social", render: (c) => c.razon_social },
+    { header: "Razón Social", render: (c) => c.razon_social, truncate: true },
     { header: "Localidad", render: (c) => c.localidad ?? "-" },
     { header: "Teléfono", render: (c) => c.telefono ?? "-" },
-    { header: "Email", render: (c) => c.email ?? "-" },
+    { header: "Email", render: (c) => c.email ?? "-", truncate: true },
     { header: "Canal", render: (c) => c.canal ?? "-" },
     { header: "Tipo Compra", render: (c) => c.tipo_compra ?? "-" },
     {

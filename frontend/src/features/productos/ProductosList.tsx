@@ -38,7 +38,7 @@ export function ProductosList() {
 
   const columns: Column<Producto>[] = [
     { header: "SKU", render: (p) => p.cod_sku },
-    { header: "Descripción", render: (p) => p.descripcion ?? "-" },
+    { header: "Descripción", render: (p) => p.descripcion ?? "-", truncate: true },
     { header: "Color", render: (p) => p.color ?? "-" },
     {
       header: "Precio",

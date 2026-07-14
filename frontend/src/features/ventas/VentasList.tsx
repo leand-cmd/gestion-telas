@@ -27,7 +27,7 @@ export function VentasList() {
 
   const columns: Column<Venta>[] = [
     { header: "Nro. Factura", render: (v) => v.nro_factura },
-    { header: "Cliente", render: (v) => v.cliente?.razon_social ?? "-" },
+    { header: "Cliente", render: (v) => v.cliente?.razon_social ?? "-", truncate: true },
     { header: "Fecha", render: (v) => v.fecha_factura ?? "-" },
     { header: "Total", render: (v) => `₲ ${v.total.toLocaleString("es-PY")}` },
     {

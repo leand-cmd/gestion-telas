@@ -34,8 +34,8 @@ export function UsuariosList() {
   };
 
   const columns: Column<Usuario>[] = [
-    { header: "Nombre", render: (u) => u.nombre },
-    { header: "Email", render: (u) => u.email },
+    { header: "Nombre", render: (u) => u.nombre, truncate: true },
+    { header: "Email", render: (u) => u.email, truncate: true },
     { header: "Rol", render: (u) => u.rol },
     {
       header: "Estado",

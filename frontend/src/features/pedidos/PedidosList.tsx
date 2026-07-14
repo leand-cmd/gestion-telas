@@ -53,7 +53,7 @@ export function PedidosList() {
 
   const columns: Column<Pedido>[] = [
     { header: "Nro. Pedido", render: (p) => p.nro_pedido },
-    { header: "Cliente", render: (p) => p.cliente?.razon_social ?? "-" },
+    { header: "Cliente", render: (p) => p.cliente?.razon_social ?? "-", truncate: true },
     { header: "Fecha", render: (p) => p.fecha_pedido ?? "-" },
     {
       header: "Total",
