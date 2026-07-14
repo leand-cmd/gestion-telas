@@ -19,6 +19,8 @@ const EMPTY: ClienteInput = {
   localidad: "",
   barrio: "",
   direccion: "",
+  telefono: "",
+  email: "",
   canal: "",
   sub_canal: "",
   tipo_compra: "",
@@ -117,6 +119,23 @@ export function ClienteForm({ cliente, onClose, onSaved }: ClienteFormProps) {
               id="direccion"
               value={form.direccion ?? ""}
               onChange={(e) => setForm({ ...form, direccion: e.target.value })}
+            />
+          </div>
+          <div>
+            <label htmlFor="telefono">Teléfono</label>
+            <input
+              id="telefono"
+              value={form.telefono ?? ""}
+              onChange={(e) => setForm({ ...form, telefono: e.target.value })}
+            />
+          </div>
+          <div>
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              value={form.email ?? ""}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
             />
           </div>
           <div>

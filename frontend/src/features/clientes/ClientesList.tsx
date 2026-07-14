@@ -37,6 +37,8 @@ export function ClientesList() {
     { header: "RUC", render: (c) => c.ruc },
     { header: "Razón Social", render: (c) => c.razon_social },
     { header: "Localidad", render: (c) => c.localidad ?? "-" },
+    { header: "Teléfono", render: (c) => c.telefono ?? "-" },
+    { header: "Email", render: (c) => c.email ?? "-" },
     { header: "Canal", render: (c) => c.canal ?? "-" },
     { header: "Tipo Compra", render: (c) => c.tipo_compra ?? "-" },
     {

@@ -10,6 +10,8 @@ class ClienteSchema(Schema):
     localidad = fields.String(allow_none=True, load_default=None)
     barrio = fields.String(allow_none=True, load_default=None)
     direccion = fields.String(allow_none=True, load_default=None)
+    telefono = fields.String(allow_none=True, load_default=None, validate=validate.Length(max=20))
+    email = fields.Email(allow_none=True, load_default=None)
     canal = fields.String(allow_none=True, load_default=None, validate=validate.OneOf(CANALES))
     sub_canal = fields.String(allow_none=True, load_default=None)
     tipo_compra = fields.String(

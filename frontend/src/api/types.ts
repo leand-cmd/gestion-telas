@@ -15,6 +15,8 @@ export interface Cliente {
   localidad: string | null;
   barrio: string | null;
   direccion: string | null;
+  telefono: string | null;
+  email: string | null;
   canal: string | null;
   sub_canal: string | null;
   tipo_compra: string | null;

@@ -15,6 +15,8 @@ class Cliente(db.Model):
     localidad = db.Column(db.String(255), index=True)
     barrio = db.Column(db.String(255))
     direccion = db.Column(db.String(500))
+    telefono = db.Column(db.String(20))
+    email = db.Column(db.String(120))
     canal = db.Column(db.String(50))
     sub_canal = db.Column(db.String(100))
     tipo_compra = db.Column(db.String(50))
@@ -41,6 +43,8 @@ class Cliente(db.Model):
             "localidad": self.localidad,
             "barrio": self.barrio,
             "direccion": self.direccion,
+            "telefono": self.telefono,
+            "email": self.email,
             "canal": self.canal,
             "sub_canal": self.sub_canal,
             "tipo_compra": self.tipo_compra,

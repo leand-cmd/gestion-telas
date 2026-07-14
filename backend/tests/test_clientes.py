@@ -8,6 +8,8 @@ def cliente_payload(ruc="80012345-6"):
         "localidad": "Asuncion",
         "barrio": "Centro",
         "direccion": "Av. Mariscal Lopez 123",
+        "telefono": "0981123456",
+        "email": "contacto@textilesdelsur.com",
         "canal": "Mayorista",
         "sub_canal": "Grandes cuentas",
         "tipo_compra": "Contado",
@@ -24,6 +26,8 @@ def test_crud_cliente(client, auth_headers):
     resp = client.get(f"/api/clientes/{cliente_id}", headers=auth_headers)
     assert resp.status_code == 200
     assert resp.get_json()["razon_social"] == "Textiles del Sur SA"
+    assert resp.get_json()["telefono"] == "0981123456"
+    assert resp.get_json()["email"] == "contacto@textilesdelsur.com"
 
     resp = client.put(
         f"/api/clientes/{cliente_id}",
@@ -76,6 +80,12 @@ def test_import_clientes_csv(client, auth_headers):
     report = resp.get_json()
     assert report["insertados"] == 1
     assert report["cantidad_errores"] == 1
+
+
+def test_email_invalido_rechazado(client, auth_headers):
+    payload = cliente_payload() | {"email": "no-es-un-email"}
+    resp = client.post("/api/clientes", json=payload, headers=auth_headers)
+    assert resp.status_code == 400
 
 
 def test_unauthenticated_access_denied(client):
