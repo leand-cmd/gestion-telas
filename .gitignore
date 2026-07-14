@@ -1,0 +1,27 @@
+# Docker Compose local
+.env
+
+# Python
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.pyc
+backend/.pytest_cache/
+backend/.env
+backend/dev.db
+backend/instance/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+
+# Uploads locales
+backend/uploads/productos/*
+!backend/uploads/productos/.gitkeep
+
+# Editor / OS
+.vscode/
+.DS_Store
+Thumbs.db
