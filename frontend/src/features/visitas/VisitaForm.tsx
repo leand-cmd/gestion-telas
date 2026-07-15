@@ -41,7 +41,7 @@ export function VisitaForm({ onClose, onSaved }: VisitaFormProps) {
     }
     setSaving(true);
     try {
-      await createVisita(form);
+      await createVisita({ ...form, proposito: form.proposito || null });
       toast.success("Visita programada");
       onSaved();
     } catch (err: any) {

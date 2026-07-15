@@ -4,6 +4,14 @@ from app.extensions import db
 
 PROPOSITOS = ("Consulta", "Oferta", "Seguimiento", "Cierre")
 RESULTADOS = ("Interesado", "No interesado", "Requiere seguimiento")
+TIPOS_GESTION = (
+    "Visita Exitosa - Carga de pedido",
+    "Cliente sobrestockeado",
+    "Requiere seguimiento",
+    "No fue posible contactar",
+    "Cliente cambió proveedor",
+    "Otro",
+)
 
 
 class Visita(db.Model):
@@ -22,6 +30,7 @@ class Visita(db.Model):
     presente_cliente = db.Column(db.Boolean)
     productos_presentados = db.Column(db.Text)
     resultado = db.Column(db.String(50))
+    tipo_gestion = db.Column(db.String(100))
     notas_visita = db.Column(db.Text)
     proxima_accion = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
@@ -51,6 +60,7 @@ class Visita(db.Model):
             "presente_cliente": self.presente_cliente,
             "productos_presentados": self.productos_presentados,
             "resultado": self.resultado,
+            "tipo_gestion": self.tipo_gestion,
             "notas_visita": self.notas_visita,
             "proxima_accion": self.proxima_accion,
             "created_at": self.created_at.isoformat() if self.created_at else None,

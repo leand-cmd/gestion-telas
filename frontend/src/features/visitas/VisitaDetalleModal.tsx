@@ -71,6 +71,7 @@ export function VisitaDetalleModal({
           {visita.estado === "realizada" && (
             <>
               <Campo label="Resultado" value={visita.resultado} />
+              <Campo label="Tipo de gestión" value={visita.tipo_gestion} />
               <Campo
                 label="Duración"
                 value={visita.duracion_actual != null ? `${visita.duracion_actual} min` : null}

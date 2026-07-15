@@ -32,13 +32,32 @@ def test_crear_y_registrar_resultado_visita(client, auth_headers):
 
     resp2 = client.patch(
         f"/api/visitas/{visita['id']}/resultado",
-        json={"resultado": "Interesado", "notas_visita": "Buena reunion"},
+        json={
+            "resultado": "Interesado",
+            "notas_visita": "Buena reunion",
+            "tipo_gestion": "Visita Exitosa - Carga de pedido",
+        },
         headers=auth_headers,
     )
     assert resp2.status_code == 200
     data = resp2.get_json()
     assert data["estado"] == "realizada"
     assert data["resultado"] == "Interesado"
+    assert data["tipo_gestion"] == "Visita Exitosa - Carga de pedido"
+
+
+def test_tipo_gestion_invalido_rechazado(client, auth_headers):
+    cliente_id, asesor_id = crear_cliente_y_asesor(client, auth_headers)
+    visita = client.post(
+        "/api/visitas", json=visita_payload(cliente_id, asesor_id), headers=auth_headers
+    ).get_json()
+
+    resp = client.patch(
+        f"/api/visitas/{visita['id']}/resultado",
+        json={"resultado": "Interesado", "tipo_gestion": "Invalido"},
+        headers=auth_headers,
+    )
+    assert resp.status_code == 400
 
 
 def test_proposito_invalido_rechazado(client, auth_headers):

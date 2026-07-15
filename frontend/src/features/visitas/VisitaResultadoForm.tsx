@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 
 import type { Visita } from "../../api/types";
 import { colors } from "../../theme/colors";
-import { RESULTADOS } from "./visitaOptions";
+import { RESULTADOS, TIPOS_GESTION } from "./visitaOptions";
 import { registrarResultado, type VisitaResultadoInput } from "./visitasApi";
 
 interface VisitaResultadoFormProps {
@@ -15,6 +15,7 @@ interface VisitaResultadoFormProps {
 export function VisitaResultadoForm({ visita, onClose, onSaved }: VisitaResultadoFormProps) {
   const [form, setForm] = useState<VisitaResultadoInput>({
     resultado: RESULTADOS[0],
+    tipo_gestion: "",
     duracion_actual: null,
     presente_cliente: true,
     productos_presentados: "",
@@ -27,7 +28,7 @@ export function VisitaResultadoForm({ visita, onClose, onSaved }: VisitaResultad
     e.preventDefault();
     setSaving(true);
     try {
-      await registrarResultado(visita.id, form);
+      await registrarResultado(visita.id, { ...form, tipo_gestion: form.tipo_gestion || null });
       toast.success("Resultado registrado");
       onSaved();
     } catch (err: any) {
@@ -54,6 +55,21 @@ export function VisitaResultadoForm({ visita, onClose, onSaved }: VisitaResultad
             {RESULTADOS.map((r) => (
               <option key={r} value={r}>
                 {r}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="tipo_gestion">Tipo de gestión</label>
+          <select
+            id="tipo_gestion"
+            value={form.tipo_gestion ?? ""}
+            onChange={(e) => setForm({ ...form, tipo_gestion: e.target.value })}
+          >
+            <option value="">Seleccionar...</option>
+            {TIPOS_GESTION.map((t) => (
+              <option key={t} value={t}>
+                {t}
               </option>
             ))}
           </select>

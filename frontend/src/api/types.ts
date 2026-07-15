@@ -135,6 +135,7 @@ export interface Visita {
   presente_cliente: boolean | null;
   productos_presentados: string | null;
   resultado: string | null;
+  tipo_gestion: string | null;
   notas_visita: string | null;
   proxima_accion: string | null;
   created_at: string;
@@ -149,6 +150,11 @@ export interface DashboardResumen {
   proximas_visitas: Visita[];
   top_clientes: { cliente: Cliente; total_ventas: number }[];
   top_productos: { producto: Producto; cantidad_total: number }[];
+  total_clientes_cartera: number;
+  clientes_visitados_mes: number;
+  cobertura_porcentaje: number;
+  gestiones_por_tipo: { tipo: string; cantidad: number }[];
+  efectividad_gestiones_porcentaje: number;
 }
 
 export interface PaginatedResponse<T> {

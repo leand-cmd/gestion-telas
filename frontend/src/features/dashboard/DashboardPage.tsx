@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 
 import { colors } from "../../theme/colors";
 import { fetchResumen } from "./dashboardApi";
+import { DonutChart } from "./DonutChart";
+import { GestionesBarList } from "./GestionesBarList";
 import { VentasPorMesChart } from "./VentasPorMesChart";
 
 function KpiCard({ label, value }: { label: string; value: string | number }) {
@@ -40,6 +42,31 @@ export function DashboardPage() {
       </div>
 
       <div className="dashboard-grid">
+        <div className="card" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+          <h3 style={{ margin: 0, alignSelf: "flex-start", color: colors.purpleDark }}>
+            Cobertura de Clientes
+          </h3>
+          <DonutChart percentage={data.cobertura_porcentaje} />
+          <div style={{ fontSize: 13, color: "#4a4a5a", textAlign: "center" }}>
+            {data.clientes_visitados_mes} de {data.total_clientes_cartera} clientes visitados este mes
+          </div>
+        </div>
+
+        <div className="card">
+          <h3 style={{ margin: "0 0 12px", color: colors.purpleDark }}>Gestiones Realizadas</h3>
+          <GestionesBarList data={data.gestiones_por_tipo} />
+        </div>
+
+        <div className="card" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+          <h3 style={{ margin: 0, alignSelf: "flex-start", color: colors.purpleDark }}>
+            Efectividad de Gestiones
+          </h3>
+          <DonutChart percentage={data.efectividad_gestiones_porcentaje} color={colors.pinkNeon} />
+          <div style={{ fontSize: 13, color: "#4a4a5a", textAlign: "center" }}>
+            de las gestiones de este mes resultaron en carga de pedido
+          </div>
+        </div>
+
         <div className="card">
           <h3 style={{ margin: "0 0 8px", color: colors.purpleDark }}>Stock bajo mínimo</h3>
           {data.stock_bajo.length === 0 ? (

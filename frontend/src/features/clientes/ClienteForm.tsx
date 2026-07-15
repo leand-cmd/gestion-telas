@@ -55,11 +55,12 @@ export function ClienteForm({ cliente, onClose, onSaved }: ClienteFormProps) {
     e.preventDefault();
     setSaving(true);
     try {
+      const payload = { ...form, canal: form.canal || null, tipo_compra: form.tipo_compra || null };
       if (cliente) {
-        await updateCliente(cliente.id, form);
+        await updateCliente(cliente.id, payload);
         toast.success("Cliente actualizado");
       } else {
-        await createCliente(form);
+        await createCliente(payload);
         toast.success("Cliente creado");
       }
       onSaved();

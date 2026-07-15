@@ -92,6 +92,36 @@ def resumen():
         for producto, cantidad in top_productos_query
     ]
 
+    fin_mes = inicio_mes + relativedelta(months=1)
+    visitas_realizadas_mes = Visita.query.filter(
+        Visita.estado == "realizada",
+        Visita.fecha >= inicio_mes,
+        Visita.fecha < fin_mes,
+    ).all()
+
+    total_clientes_cartera = Cliente.query.filter_by(estado=True).count()
+    clientes_visitados_mes = len({v.cliente_id for v in visitas_realizadas_mes})
+    cobertura_porcentaje = (
+        round(clientes_visitados_mes / total_clientes_cartera * 100, 1)
+        if total_clientes_cartera > 0
+        else 0
+    )
+
+    gestiones_dict: dict[str, int] = defaultdict(int)
+    for v in visitas_realizadas_mes:
+        if v.tipo_gestion:
+            gestiones_dict[v.tipo_gestion] += 1
+    gestiones_por_tipo = [
+        {"tipo": tipo, "cantidad": cantidad}
+        for tipo, cantidad in sorted(gestiones_dict.items(), key=lambda x: -x[1])
+    ]
+
+    total_gestiones = sum(gestiones_dict.values())
+    gestiones_exitosas = gestiones_dict.get("Visita Exitosa - Carga de pedido", 0)
+    efectividad_gestiones_porcentaje = (
+        round(gestiones_exitosas / total_gestiones * 100, 1) if total_gestiones > 0 else 0
+    )
+
     return jsonify(
         {
             "ventas_mes_actual": round(ventas_mes_actual, 2),
@@ -101,5 +131,10 @@ def resumen():
             "proximas_visitas": [v.to_dict() for v in proximas_visitas],
             "top_clientes": top_clientes,
             "top_productos": top_productos,
+            "total_clientes_cartera": total_clientes_cartera,
+            "clientes_visitados_mes": clientes_visitados_mes,
+            "cobertura_porcentaje": cobertura_porcentaje,
+            "gestiones_por_tipo": gestiones_por_tipo,
+            "efectividad_gestiones_porcentaje": efectividad_gestiones_porcentaje,
         }
     )

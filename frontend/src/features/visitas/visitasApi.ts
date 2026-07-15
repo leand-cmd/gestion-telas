@@ -38,6 +38,7 @@ export async function updateVisita(id: number, input: Partial<VisitaInput>) {
 
 export interface VisitaResultadoInput {
   resultado: string;
+  tipo_gestion?: string | null;
   duracion_actual?: number | null;
   presente_cliente?: boolean | null;
   productos_presentados?: string | null;
