@@ -1,5 +1,5 @@
 def cliente_payload(ruc="80099999-1"):
-    return {"ruc": ruc, "razon_social": "Cliente Pedidos SA"}
+    return {"ruc": ruc, "razon_social": "Cliente Pedidos SA", "direccion": "Calle Falsa 123"}
 
 
 def producto_payload(sku="TEL-PED-1"):

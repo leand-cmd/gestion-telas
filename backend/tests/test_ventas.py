@@ -1,5 +1,5 @@
 def cliente_payload(ruc="80088888-1"):
-    return {"ruc": ruc, "razon_social": "Cliente Ventas SA"}
+    return {"ruc": ruc, "razon_social": "Cliente Ventas SA", "direccion": "Calle Falsa 123"}
 
 
 def test_crear_venta_suelta(client, auth_headers):

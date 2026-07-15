@@ -34,6 +34,7 @@ export function ClientesList() {
   const refetch = () => queryClient.invalidateQueries({ queryKey: ["clientes"] });
 
   const columns: Column<Cliente>[] = [
+    { header: "ID Cliente", render: (c) => c.id },
     { header: "RUC", render: (c) => c.ruc },
     { header: "Razón Social", render: (c) => c.razon_social, truncate: true },
     { header: "Localidad", render: (c) => c.localidad ?? "-" },

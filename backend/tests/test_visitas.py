@@ -1,5 +1,5 @@
 def cliente_payload(ruc="80077777-1"):
-    return {"ruc": ruc, "razon_social": "Cliente Visitas SA"}
+    return {"ruc": ruc, "razon_social": "Cliente Visitas SA", "direccion": "Calle Falsa 123"}
 
 
 def crear_cliente_y_asesor(client, auth_headers):

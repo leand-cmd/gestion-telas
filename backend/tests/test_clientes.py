@@ -65,9 +65,9 @@ def test_search_and_pagination(client, auth_headers):
 
 def test_import_clientes_csv(client, auth_headers):
     csv_content = (
-        "ruc,razon_social,localidad,canal,tipo_compra\n"
-        "90011111-2,Hilados SA,Encarnacion,Minorista,Credito\n"
-        "90011111-2,Hilados SA duplicado,Encarnacion,Minorista,Credito\n"
+        "ruc,razon_social,direccion,localidad,canal,tipo_compra\n"
+        "90011111-2,Hilados SA,Av. Espana 456,Encarnacion,Minorista,Credito\n"
+        "90011111-2,Hilados SA duplicado,Av. Espana 456,Encarnacion,Minorista,Credito\n"
     )
     data = {"file": (io.BytesIO(csv_content.encode()), "clientes.csv")}
     resp = client.post(

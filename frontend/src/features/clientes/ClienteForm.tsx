@@ -64,6 +64,14 @@ export function ClienteForm({ cliente, onClose, onSaved }: ClienteFormProps) {
 
         <div className="form-grid">
           <div>
+            <label htmlFor="id_cliente">ID Cliente</label>
+            <input
+              id="id_cliente"
+              value={cliente ? cliente.id : "Se asigna al guardar"}
+              disabled
+            />
+          </div>
+          <div>
             <label htmlFor="ruc">RUC</label>
             <input
               id="ruc"
