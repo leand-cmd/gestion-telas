@@ -88,6 +88,40 @@ def test_email_invalido_rechazado(client, auth_headers):
     assert resp.status_code == 400
 
 
+def test_codigo_cliente_autoasignado_correlativo(client, auth_headers):
+    resp1 = client.post("/api/clientes", json=cliente_payload(ruc="80020001-1"), headers=auth_headers)
+    resp2 = client.post("/api/clientes", json=cliente_payload(ruc="80020002-2"), headers=auth_headers)
+    assert resp1.get_json()["codigo_cliente"] == "1"
+    assert resp2.get_json()["codigo_cliente"] == "2"
+
+
+def test_codigo_cliente_personalizado(client, auth_headers):
+    payload = cliente_payload(ruc="80020003-3") | {"codigo_cliente": "ABC-001"}
+    resp = client.post("/api/clientes", json=payload, headers=auth_headers)
+    assert resp.status_code == 201
+    assert resp.get_json()["codigo_cliente"] == "ABC-001"
+
+
+def test_codigo_cliente_duplicado_rechazado(client, auth_headers):
+    payload = cliente_payload(ruc="80020004-4") | {"codigo_cliente": "ABC-001"}
+    client.post("/api/clientes", json=payload, headers=auth_headers)
+
+    payload2 = cliente_payload(ruc="80020005-5") | {"codigo_cliente": "ABC-001"}
+    resp = client.post("/api/clientes", json=payload2, headers=auth_headers)
+    assert resp.status_code == 409
+
+
+def test_sugerencia_next_id(client, auth_headers):
+    resp = client.get("/api/clientes/next-id", headers=auth_headers)
+    assert resp.status_code == 200
+    assert resp.get_json()["next_id"] == "1"
+
+    client.post("/api/clientes", json=cliente_payload(ruc="80020006-6"), headers=auth_headers)
+
+    resp2 = client.get("/api/clientes/next-id", headers=auth_headers)
+    assert resp2.get_json()["next_id"] == "2"
+
+
 def test_unauthenticated_access_denied(client):
     resp = client.get("/api/clientes")
     assert resp.status_code == 401

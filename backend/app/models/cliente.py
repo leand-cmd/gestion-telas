@@ -10,6 +10,7 @@ class Cliente(db.Model):
     __tablename__ = "clientes"
 
     id = db.Column(db.Integer, primary_key=True)
+    codigo_cliente = db.Column(db.String(50), unique=True, index=True, nullable=True)
     ruc = db.Column(db.String(50), unique=True, nullable=False, index=True)
     razon_social = db.Column(db.String(255), nullable=False, index=True)
     localidad = db.Column(db.String(255), index=True)
@@ -38,6 +39,7 @@ class Cliente(db.Model):
     def to_dict(self) -> dict:
         return {
             "id": self.id,
+            "codigo_cliente": self.codigo_cliente,
             "ruc": self.ruc,
             "razon_social": self.razon_social,
             "localidad": self.localidad,

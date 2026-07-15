@@ -5,6 +5,7 @@ from app.models.cliente import CANALES, TIPOS_COMPRA
 
 class ClienteSchema(Schema):
     id = fields.Integer(dump_only=True)
+    codigo_cliente = fields.String(allow_none=True, load_default=None, validate=validate.Length(max=50))
     ruc = fields.String(required=True, validate=validate.Length(min=1, max=50))
     razon_social = fields.String(required=True, validate=validate.Length(min=1, max=255))
     localidad = fields.String(allow_none=True, load_default=None)

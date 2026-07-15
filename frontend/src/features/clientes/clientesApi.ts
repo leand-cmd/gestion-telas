@@ -32,6 +32,11 @@ export async function deleteCliente(id: number) {
   await apiClient.delete(`/clientes/${id}`);
 }
 
+export async function fetchNextClienteId() {
+  const { data } = await apiClient.get<{ next_id: string }>("/clientes/next-id");
+  return data.next_id;
+}
+
 export async function importClientes(file: File) {
   const formData = new FormData();
   formData.append("file", file);

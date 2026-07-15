@@ -10,6 +10,7 @@ export interface Usuario {
 
 export interface Cliente {
   id: number;
+  codigo_cliente: string | null;
   ruc: string;
   razon_social: string;
   localidad: string | null;

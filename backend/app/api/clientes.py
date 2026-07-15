@@ -10,11 +10,13 @@ from app.extensions import db
 from app.models.cliente import Cliente
 from app.schemas.cliente_schema import cliente_schema, cliente_update_schema
 from app.utils.importers import ImportError_, build_import_report, read_tabular_file
+from app.utils.numbering import generate_next_numeric_code
 from app.utils.pagination import paginate
 
 clientes_bp = Blueprint("clientes", __name__)
 
 CSV_COLUMNS = [
+    "codigo_cliente",
     "ruc",
     "razon_social",
     "localidad",
@@ -69,6 +71,12 @@ def listar_clientes():
     )
 
 
+@clientes_bp.get("/next-id")
+@jwt_required()
+def sugerir_codigo_cliente():
+    return jsonify({"next_id": generate_next_numeric_code(Cliente, "codigo_cliente")})
+
+
 @clientes_bp.post("")
 @jwt_required()
 def crear_cliente():
@@ -80,6 +88,14 @@ def crear_cliente():
     if Cliente.query.filter_by(ruc=data["ruc"]).first():
         return jsonify({"error": "Ya existe un cliente con ese RUC"}), 409
 
+    codigo_cliente = data.get("codigo_cliente")
+    if codigo_cliente:
+        if Cliente.query.filter_by(codigo_cliente=codigo_cliente).first():
+            return jsonify({"error": f"El ID de cliente '{codigo_cliente}' ya esta en uso"}), 409
+    else:
+        codigo_cliente = generate_next_numeric_code(Cliente, "codigo_cliente")
+
+    data["codigo_cliente"] = codigo_cliente
     cliente = Cliente(**data)
     db.session.add(cliente)
     db.session.commit()
@@ -105,6 +121,17 @@ def actualizar_cliente(cliente_id):
     if "ruc" in data and data["ruc"] != cliente.ruc:
         if Cliente.query.filter_by(ruc=data["ruc"]).first():
             return jsonify({"error": "Ya existe un cliente con ese RUC"}), 409
+
+    if (
+        "codigo_cliente" in data
+        and data["codigo_cliente"]
+        and data["codigo_cliente"] != cliente.codigo_cliente
+    ):
+        if Cliente.query.filter_by(codigo_cliente=data["codigo_cliente"]).first():
+            return (
+                jsonify({"error": f"El ID de cliente '{data['codigo_cliente']}' ya esta en uso"}),
+                409,
+            )
 
     for key, value in data.items():
         setattr(cliente, key, value)
@@ -140,6 +167,7 @@ def importar_clientes():
         try:
             data = cliente_schema.load(
                 {
+                    "codigo_cliente": row.get("codigo_cliente") or None,
                     "ruc": row.get("ruc", "").strip(),
                     "razon_social": row.get("razon_social", "").strip(),
                     "localidad": row.get("localidad") or None,
@@ -162,6 +190,15 @@ def importar_clientes():
         if Cliente.query.filter_by(ruc=data["ruc"]).first():
             errors.append({"fila": idx, "error": f"RUC {data['ruc']} ya existe"})
             continue
+
+        if data.get("codigo_cliente"):
+            if Cliente.query.filter_by(codigo_cliente=data["codigo_cliente"]).first():
+                errors.append(
+                    {"fila": idx, "error": f"ID de cliente '{data['codigo_cliente']}' ya existe"}
+                )
+                continue
+        else:
+            data["codigo_cliente"] = generate_next_numeric_code(Cliente, "codigo_cliente")
 
         db.session.add(Cliente(**data))
         inserted += 1

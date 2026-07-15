@@ -1,10 +1,11 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
 import type { Cliente } from "../../api/types";
 import { colors } from "../../theme/colors";
 import { CANALES, SUB_CANALES_POR_CANAL, TIPOS_COMPRA } from "./canalOptions";
-import { createCliente, updateCliente, type ClienteInput } from "./clientesApi";
+import { createCliente, fetchNextClienteId, updateCliente, type ClienteInput } from "./clientesApi";
 import { MapPicker } from "./MapPicker";
 
 interface ClienteFormProps {
@@ -14,6 +15,7 @@ interface ClienteFormProps {
 }
 
 const EMPTY: ClienteInput = {
+  codigo_cliente: "",
   ruc: "",
   razon_social: "",
   localidad: "",
@@ -33,6 +35,19 @@ const EMPTY: ClienteInput = {
 export function ClienteForm({ cliente, onClose, onSaved }: ClienteFormProps) {
   const [form, setForm] = useState<ClienteInput>(cliente ? { ...EMPTY, ...cliente } : EMPTY);
   const [saving, setSaving] = useState(false);
+
+  const { data: sugerencia } = useQuery({
+    queryKey: ["cliente-next-id"],
+    queryFn: fetchNextClienteId,
+    enabled: !cliente,
+  });
+
+  useEffect(() => {
+    if (!cliente && sugerencia && !form.codigo_cliente) {
+      setForm((prev) => ({ ...prev, codigo_cliente: sugerencia }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sugerencia]);
 
   const subCanalOptions = form.canal ? SUB_CANALES_POR_CANAL[form.canal] ?? [] : [];
 
@@ -64,12 +79,18 @@ export function ClienteForm({ cliente, onClose, onSaved }: ClienteFormProps) {
 
         <div className="form-grid">
           <div>
-            <label htmlFor="id_cliente">ID Cliente</label>
+            <label htmlFor="codigo_cliente">ID Cliente</label>
             <input
-              id="id_cliente"
-              value={cliente ? cliente.id : "Se asigna al guardar"}
-              disabled
+              id="codigo_cliente"
+              value={form.codigo_cliente ?? ""}
+              onChange={(e) => setForm({ ...form, codigo_cliente: e.target.value })}
+              placeholder={sugerencia ? `Sugerencia: ${sugerencia}` : undefined}
             />
+            {!cliente && sugerencia && (
+              <p style={{ fontSize: 11, color: colors.grayNeutral, margin: "4px 0 0" }}>
+                Sugerencia: {sugerencia}. Podés dejarla o escribir otro código (ej. "ABC-001").
+              </p>
+            )}
           </div>
           <div>
             <label htmlFor="ruc">RUC</label>
