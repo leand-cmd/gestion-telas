@@ -64,7 +64,7 @@ export interface PedidoDetalle {
   subtotal: number | null;
 }
 
-export type PedidoEstado = "borrador" | "confirmado" | "entregado" | "facturado" | "cancelado";
+export type PedidoEstado = "Pendiente" | "Confirmado" | "Entregado" | "Facturado" | "Cancelado";
 
 export interface Pedido {
   id: number;

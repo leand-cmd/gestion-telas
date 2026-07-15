@@ -20,11 +20,11 @@ from app.utils.pdf import generate_pedido_pdf
 pedidos_bp = Blueprint("pedidos", __name__)
 
 ESTADOS_TRANSICION = {
-    "borrador": {"confirmado", "cancelado"},
-    "confirmado": {"entregado", "cancelado"},
-    "entregado": {"cancelado"},
-    "facturado": set(),
-    "cancelado": set(),
+    "Pendiente": {"Confirmado", "Cancelado"},
+    "Confirmado": {"Entregado", "Cancelado"},
+    "Entregado": {"Cancelado"},
+    "Facturado": set(),
+    "Cancelado": set(),
 }
 
 CSV_COLUMNS = [
@@ -123,7 +123,7 @@ def crear_pedido():
         fecha_entrega_estimada=data.get("fecha_entrega_estimada"),
         observaciones=data.get("observaciones"),
         total=total,
-        estado="borrador",
+        estado="Pendiente",
         detalles=detalles,
     )
     db.session.add(pedido)
@@ -142,8 +142,8 @@ def obtener_pedido(pedido_id):
 @jwt_required()
 def actualizar_pedido(pedido_id):
     pedido = Pedido.query.get_or_404(pedido_id)
-    if pedido.estado != "borrador":
-        return jsonify({"error": "Solo se pueden editar pedidos en borrador"}), 409
+    if pedido.estado != "Pendiente":
+        return jsonify({"error": "Solo se pueden editar pedidos en estado Pendiente"}), 409
 
     try:
         data = pedido_update_schema.load(request.get_json(force=True) or {})
@@ -189,8 +189,8 @@ def cambiar_estado_pedido(pedido_id):
 @jwt_required()
 def eliminar_pedido(pedido_id):
     pedido = Pedido.query.get_or_404(pedido_id)
-    if pedido.estado != "borrador":
-        return jsonify({"error": "Solo se pueden eliminar pedidos en borrador"}), 409
+    if pedido.estado != "Pendiente":
+        return jsonify({"error": "Solo se pueden eliminar pedidos en estado Pendiente"}), 409
 
     db.session.delete(pedido)
     db.session.commit()
@@ -237,9 +237,9 @@ def enviar_email_pedido(pedido_id):
 @jwt_required()
 def convertir_pedido_a_venta(pedido_id):
     pedido = Pedido.query.get_or_404(pedido_id)
-    if pedido.estado not in ("confirmado", "entregado"):
+    if pedido.estado not in ("Confirmado", "Entregado"):
         return (
-            jsonify({"error": "Solo se pueden facturar pedidos confirmados o entregados"}),
+            jsonify({"error": "Solo se pueden facturar pedidos Confirmados o Entregados"}),
             409,
         )
 
@@ -253,7 +253,7 @@ def convertir_pedido_a_venta(pedido_id):
         tipo_compra=pedido.tipo_compra,
         estado_pago="pendiente",
     )
-    pedido.estado = "facturado"
+    pedido.estado = "Facturado"
     db.session.add(venta)
     db.session.commit()
     return jsonify(venta.to_dict()), 201

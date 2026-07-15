@@ -41,6 +41,10 @@ def listar_visitas():
     if estado:
         query = query.filter(Visita.estado == estado)
 
+    tipo_gestion = request.args.get("tipo_gestion")
+    if tipo_gestion:
+        query = query.filter(Visita.tipo_gestion == tipo_gestion)
+
     query = query.order_by(Visita.fecha.asc(), Visita.hora.asc())
 
     result = paginate(query)

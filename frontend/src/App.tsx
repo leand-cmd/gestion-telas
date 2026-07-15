@@ -8,6 +8,7 @@ import { ProtectedRoute } from "./auth/ProtectedRoute";
 import { Layout } from "./components/Layout";
 import { DashboardPage } from "./features/dashboard/DashboardPage";
 import { ClientesList } from "./features/clientes/ClientesList";
+import { GestionesPage } from "./features/gestiones/GestionesPage";
 import { HistorialPage } from "./features/historial/HistorialPage";
 import { ImportacionPage } from "./features/importacion/ImportacionPage";
 import { PedidosList } from "./features/pedidos/PedidosList";
@@ -40,6 +41,7 @@ export function App() {
             <Route path="/ventas" element={<VentasList />} />
             <Route path="/stock" element={<StockList />} />
             <Route path="/visitas" element={<VisitasList />} />
+            <Route path="/gestiones" element={<GestionesPage />} />
             <Route path="/historial" element={<HistorialPage />} />
             <Route path="/importacion" element={<ImportacionPage />} />
             <Route element={<AdminRoute />}>

@@ -19,19 +19,19 @@ import {
 } from "./pedidosApi";
 
 const TRANSICIONES: Record<PedidoEstado, PedidoEstado[]> = {
-  borrador: ["confirmado", "cancelado"],
-  confirmado: ["entregado", "cancelado"],
-  entregado: ["cancelado"],
-  facturado: [],
-  cancelado: [],
+  Pendiente: ["Confirmado", "Cancelado"],
+  Confirmado: ["Entregado", "Cancelado"],
+  Entregado: ["Cancelado"],
+  Facturado: [],
+  Cancelado: [],
 };
 
 const ESTADOS_FILTRO: PedidoEstado[] = [
-  "borrador",
-  "confirmado",
-  "entregado",
-  "facturado",
-  "cancelado",
+  "Pendiente",
+  "Confirmado",
+  "Entregado",
+  "Facturado",
+  "Cancelado",
 ];
 
 export function PedidosList() {
@@ -67,7 +67,7 @@ export function PedidosList() {
       header: "Acciones",
       render: (p) => (
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          {p.estado === "borrador" && (
+          {p.estado === "Pendiente" && (
             <button
               className="btn btn-secondary"
               onClick={() => {
@@ -95,7 +95,7 @@ export function PedidosList() {
               {siguiente}
             </button>
           ))}
-          {(p.estado === "confirmado" || p.estado === "entregado") && (
+          {(p.estado === "Confirmado" || p.estado === "Entregado") && (
             <button className="btn btn-primary" onClick={() => setConvirtiendo(p)}>
               Convertir a venta
             </button>
@@ -118,7 +118,7 @@ export function PedidosList() {
           >
             Email
           </button>
-          {p.estado === "borrador" && (
+          {p.estado === "Pendiente" && (
             <button className="btn btn-danger" onClick={() => setDeleting(p)}>
               Eliminar
             </button>

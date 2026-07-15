@@ -14,13 +14,13 @@ interface VisitaResultadoFormProps {
 
 export function VisitaResultadoForm({ visita, onClose, onSaved }: VisitaResultadoFormProps) {
   const [form, setForm] = useState<VisitaResultadoInput>({
-    resultado: RESULTADOS[0],
-    tipo_gestion: "",
-    duracion_actual: null,
-    presente_cliente: true,
-    productos_presentados: "",
-    notas_visita: "",
-    proxima_accion: "",
+    resultado: visita.resultado ?? RESULTADOS[0],
+    tipo_gestion: visita.tipo_gestion ?? "",
+    duracion_actual: visita.duracion_actual ?? null,
+    presente_cliente: visita.presente_cliente ?? true,
+    productos_presentados: visita.productos_presentados ?? "",
+    notas_visita: visita.notas_visita ?? "",
+    proxima_accion: visita.proxima_accion ?? "",
   });
   const [saving, setSaving] = useState(false);
 

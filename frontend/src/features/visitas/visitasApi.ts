@@ -7,6 +7,7 @@ export interface VisitaFilters {
   asesor_id?: number;
   cliente_id?: number;
   estado?: string;
+  tipo_gestion?: string;
   page?: number;
   per_page?: number;
 }

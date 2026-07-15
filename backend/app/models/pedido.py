@@ -14,7 +14,7 @@ class Pedido(db.Model):
     fecha_entrega_estimada = db.Column(db.Date)
     total = db.Column(db.Numeric(14, 2), default=0)
     observaciones = db.Column(db.Text)
-    estado = db.Column(db.String(50), default="borrador", nullable=False)
+    estado = db.Column(db.String(50), default="Pendiente", nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = db.Column(
         db.DateTime,

@@ -34,7 +34,7 @@ def test_crear_pedido_calcula_total_y_numeracion(client, auth_headers):
     data = resp.get_json()
     assert data["nro_pedido"] == "PED-00001"
     assert data["total"] == 3000
-    assert data["estado"] == "borrador"
+    assert data["estado"] == "Pendiente"
 
     resp2 = client.post(
         "/api/pedidos", json=pedido_payload(cliente_id, producto_id), headers=auth_headers
@@ -50,7 +50,7 @@ def test_no_se_puede_editar_pedido_confirmado(client, auth_headers):
 
     client.patch(
         f"/api/pedidos/{pedido['id']}/estado",
-        json={"estado": "confirmado"},
+        json={"estado": "Confirmado"},
         headers=auth_headers,
     )
 
@@ -70,7 +70,7 @@ def test_transicion_estado_invalida_rechazada(client, auth_headers):
 
     resp = client.patch(
         f"/api/pedidos/{pedido['id']}/estado",
-        json={"estado": "entregado"},
+        json={"estado": "Entregado"},
         headers=auth_headers,
     )
     assert resp.status_code == 400
@@ -84,7 +84,7 @@ def test_convertir_a_venta(client, auth_headers):
 
     client.patch(
         f"/api/pedidos/{pedido['id']}/estado",
-        json={"estado": "confirmado"},
+        json={"estado": "Confirmado"},
         headers=auth_headers,
     )
 
@@ -99,7 +99,7 @@ def test_convertir_a_venta(client, auth_headers):
     pedido_actualizado = client.get(
         f"/api/pedidos/{pedido['id']}", headers=auth_headers
     ).get_json()
-    assert pedido_actualizado["estado"] == "facturado"
+    assert pedido_actualizado["estado"] == "Facturado"
 
     resp2 = client.post(
         f"/api/pedidos/{pedido['id']}/convertir-a-venta", headers=auth_headers

@@ -46,6 +46,35 @@ def test_crear_y_registrar_resultado_visita(client, auth_headers):
     assert data["tipo_gestion"] == "Visita Exitosa - Carga de pedido"
 
 
+def test_filtro_por_tipo_gestion(client, auth_headers):
+    cliente_id, asesor_id = crear_cliente_y_asesor(client, auth_headers)
+    v1 = client.post(
+        "/api/visitas", json=visita_payload(cliente_id, asesor_id), headers=auth_headers
+    ).get_json()
+    v2 = client.post(
+        "/api/visitas",
+        json=visita_payload(cliente_id, asesor_id) | {"fecha": "2026-08-02"},
+        headers=auth_headers,
+    ).get_json()
+    client.patch(
+        f"/api/visitas/{v1['id']}/resultado",
+        json={"resultado": "Interesado", "tipo_gestion": "Visita Exitosa - Carga de pedido"},
+        headers=auth_headers,
+    )
+    client.patch(
+        f"/api/visitas/{v2['id']}/resultado",
+        json={"resultado": "Requiere seguimiento", "tipo_gestion": "Requiere seguimiento"},
+        headers=auth_headers,
+    )
+
+    resp = client.get(
+        "/api/visitas?tipo_gestion=Visita Exitosa - Carga de pedido", headers=auth_headers
+    )
+    data = resp.get_json()
+    assert data["total"] == 1
+    assert data["items"][0]["id"] == v1["id"]
+
+
 def test_tipo_gestion_invalido_rechazado(client, auth_headers):
     cliente_id, asesor_id = crear_cliente_y_asesor(client, auth_headers)
     visita = client.post(

@@ -45,7 +45,7 @@ def resumen():
         ventas_por_mes.append({"mes": clave, "total": round(ventas_por_mes_dict.get(clave, 0), 2)})
 
     pedidos_pendientes = Pedido.query.filter(
-        Pedido.estado.in_(["borrador", "confirmado"])
+        Pedido.estado.in_(["Pendiente", "Confirmado"])
     ).count()
 
     stock_bajo = (

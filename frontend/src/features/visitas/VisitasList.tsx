@@ -179,12 +179,10 @@ export function VisitasList() {
                 return (
                   <div
                     key={v.id}
-                    onClick={() => setDetalleVisita(v)}
                     style={{
                       padding: 10,
                       borderRadius: 12,
                       background: colors.grayLight,
-                      cursor: "pointer",
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
@@ -197,12 +195,14 @@ export function VisitasList() {
                       </div>
                       <div style={{ fontSize: 12, color: colors.grayNeutral }}>{v.proposito ?? "-"}</div>
                     </div>
-                    <span
-                      className="badge"
-                      style={{ background: c.bg, color: c.text, flexShrink: 0 }}
-                    >
-                      {ESTADO_LABELS[v.estado]}
-                    </span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                      <span className="badge" style={{ background: c.bg, color: c.text }}>
+                        {ESTADO_LABELS[v.estado]}
+                      </span>
+                      <button className="btn btn-secondary" onClick={() => setDetalleVisita(v)}>
+                        Ver detalle
+                      </button>
+                    </div>
                   </div>
                 );
               })}
