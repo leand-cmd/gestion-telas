@@ -85,7 +85,8 @@ def crear_cliente():
     except ValidationError as err:
         return jsonify({"errors": err.messages}), 400
 
-    if Cliente.query.filter_by(ruc=data["ruc"]).first():
+    data["ruc"] = data.get("ruc") or None
+    if data["ruc"] and Cliente.query.filter_by(ruc=data["ruc"]).first():
         return jsonify({"error": "Ya existe un cliente con ese RUC"}), 409
 
     codigo_cliente = data.get("codigo_cliente")
@@ -118,9 +119,11 @@ def actualizar_cliente(cliente_id):
     except ValidationError as err:
         return jsonify({"errors": err.messages}), 400
 
-    if "ruc" in data and data["ruc"] != cliente.ruc:
-        if Cliente.query.filter_by(ruc=data["ruc"]).first():
-            return jsonify({"error": "Ya existe un cliente con ese RUC"}), 409
+    if "ruc" in data:
+        data["ruc"] = data.get("ruc") or None
+        if data["ruc"] and data["ruc"] != cliente.ruc:
+            if Cliente.query.filter_by(ruc=data["ruc"]).first():
+                return jsonify({"error": "Ya existe un cliente con ese RUC"}), 409
 
     if (
         "codigo_cliente" in data
@@ -168,7 +171,7 @@ def importar_clientes():
             data = cliente_schema.load(
                 {
                     "codigo_cliente": row.get("codigo_cliente") or None,
-                    "ruc": row.get("ruc", "").strip(),
+                    "ruc": row.get("ruc", "").strip() or None,
                     "razon_social": row.get("razon_social", "").strip(),
                     "localidad": row.get("localidad") or None,
                     "barrio": row.get("barrio") or None,
@@ -187,7 +190,7 @@ def importar_clientes():
             errors.append({"fila": idx, "error": err.messages})
             continue
 
-        if Cliente.query.filter_by(ruc=data["ruc"]).first():
+        if data["ruc"] and Cliente.query.filter_by(ruc=data["ruc"]).first():
             errors.append({"fila": idx, "error": f"RUC {data['ruc']} ya existe"})
             continue
 

@@ -50,6 +50,63 @@ def test_duplicate_ruc_rejected(client, auth_headers):
     assert resp.status_code == 409
 
 
+def test_cliente_sin_ruc_permitido(client, auth_headers):
+    resp = client.post(
+        "/api/clientes",
+        json={"razon_social": "Cliente Sin Ruc"},
+        headers=auth_headers,
+    )
+    assert resp.status_code == 201
+    assert resp.get_json()["ruc"] is None
+
+
+def test_multiples_clientes_sin_ruc_no_colisionan(client, auth_headers):
+    resp1 = client.post(
+        "/api/clientes", json={"razon_social": "Cliente A"}, headers=auth_headers
+    )
+    resp2 = client.post(
+        "/api/clientes", json={"razon_social": "Cliente B"}, headers=auth_headers
+    )
+    assert resp1.status_code == 201
+    assert resp2.status_code == 201
+
+
+def test_ruc_vacio_se_normaliza_a_null(client, auth_headers):
+    resp = client.post(
+        "/api/clientes",
+        json={"razon_social": "Cliente RUC vacio", "ruc": ""},
+        headers=auth_headers,
+    )
+    assert resp.status_code == 201
+    assert resp.get_json()["ruc"] is None
+
+
+def test_actualizar_a_ruc_vacio_no_colisiona_entre_clientes(client, auth_headers):
+    c1 = client.post(
+        "/api/clientes", json={"razon_social": "Cliente A"}, headers=auth_headers
+    ).get_json()
+    c2 = client.post(
+        "/api/clientes", json={"razon_social": "Cliente B"}, headers=auth_headers
+    ).get_json()
+
+    resp1 = client.put(f"/api/clientes/{c1['id']}", json={"ruc": ""}, headers=auth_headers)
+    resp2 = client.put(f"/api/clientes/{c2['id']}", json={"ruc": ""}, headers=auth_headers)
+    assert resp1.status_code == 200
+    assert resp2.status_code == 200
+
+
+def test_actualizar_a_ruc_duplicado_rechazado(client, auth_headers):
+    c1 = client.post("/api/clientes", json=cliente_payload(ruc="80099999-9"), headers=auth_headers).get_json()
+    c2 = client.post(
+        "/api/clientes", json={"razon_social": "Cliente sin ruc"}, headers=auth_headers
+    ).get_json()
+
+    resp = client.put(
+        f"/api/clientes/{c2['id']}", json={"ruc": "80099999-9"}, headers=auth_headers
+    )
+    assert resp.status_code == 409
+
+
 def test_search_and_pagination(client, auth_headers):
     for i in range(3):
         client.post(

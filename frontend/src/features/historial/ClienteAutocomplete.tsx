@@ -70,7 +70,7 @@ export function ClienteAutocomplete({ selected, onSelect }: ClienteAutocompleteP
               onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
             >
               <div style={{ fontWeight: 600 }}>{c.razon_social}</div>
-              <div style={{ fontSize: 11, color: colors.grayNeutral }}>{c.ruc}</div>
+              <div style={{ fontSize: 11, color: colors.grayNeutral }}>{c.ruc ?? "-"}</div>
             </div>
           ))}
         </div>

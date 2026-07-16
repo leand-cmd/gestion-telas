@@ -55,7 +55,12 @@ export function ClienteForm({ cliente, onClose, onSaved }: ClienteFormProps) {
     e.preventDefault();
     setSaving(true);
     try {
-      const payload = { ...form, canal: form.canal || null, tipo_compra: form.tipo_compra || null };
+      const payload = {
+        ...form,
+        ruc: form.ruc || null,
+        canal: form.canal || null,
+        tipo_compra: form.tipo_compra || null,
+      };
       if (cliente) {
         await updateCliente(cliente.id, payload);
         toast.success("Cliente actualizado");
@@ -97,9 +102,8 @@ export function ClienteForm({ cliente, onClose, onSaved }: ClienteFormProps) {
             <label htmlFor="ruc">RUC</label>
             <input
               id="ruc"
-              value={form.ruc}
+              value={form.ruc ?? ""}
               onChange={(e) => setForm({ ...form, ruc: e.target.value })}
-              required
             />
           </div>
           <div>

@@ -86,7 +86,7 @@ export function HistorialPage() {
               <div style={{ fontSize: 18, fontWeight: 700, color: colors.purpleDark }}>
                 {cliente.razon_social}
               </div>
-              <div style={{ fontSize: 12, color: colors.grayNeutral }}>{cliente.ruc}</div>
+              <div style={{ fontSize: 12, color: colors.grayNeutral }}>{cliente.ruc ?? "-"}</div>
             </div>
             <div className="card">
               <div style={{ fontSize: 13, color: colors.grayNeutral }}>Total comprado</div>

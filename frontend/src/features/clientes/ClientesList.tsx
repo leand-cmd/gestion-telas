@@ -35,7 +35,7 @@ export function ClientesList() {
 
   const columns: Column<Cliente>[] = [
     { header: "ID Cliente", render: (c) => c.codigo_cliente ?? c.id },
-    { header: "RUC", render: (c) => c.ruc },
+    { header: "RUC", render: (c) => c.ruc ?? "-" },
     { header: "Razón Social", render: (c) => c.razon_social, truncate: true },
     { header: "Localidad", render: (c) => c.localidad ?? "-" },
     { header: "Teléfono", render: (c) => c.telefono ?? "-" },

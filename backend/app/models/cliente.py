@@ -11,7 +11,7 @@ class Cliente(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     codigo_cliente = db.Column(db.String(50), unique=True, index=True, nullable=True)
-    ruc = db.Column(db.String(50), unique=True, nullable=False, index=True)
+    ruc = db.Column(db.String(50), unique=True, nullable=True, index=True)
     razon_social = db.Column(db.String(255), nullable=False, index=True)
     localidad = db.Column(db.String(255), index=True)
     barrio = db.Column(db.String(255))
