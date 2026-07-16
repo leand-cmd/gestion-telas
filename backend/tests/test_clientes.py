@@ -10,7 +10,7 @@ def cliente_payload(ruc="80012345-6"):
         "direccion": "Av. Mariscal Lopez 123",
         "telefono": "0981123456",
         "email": "contacto@textilesdelsur.com",
-        "canal": "Mayorista",
+        "canal": "Línea Uniformes",
         "sub_canal": "Grandes cuentas",
         "tipo_compra": "Contado",
         "latitude": -25.2637,
@@ -107,6 +107,36 @@ def test_actualizar_a_ruc_duplicado_rechazado(client, auth_headers):
     assert resp.status_code == 409
 
 
+def test_campos_opcionales_vacios_no_rompen_creacion(client, auth_headers):
+    resp = client.post(
+        "/api/clientes",
+        json={
+            "razon_social": "Cliente minimo",
+            "email": "",
+            "canal": "",
+            "tipo_compra": "",
+            "telefono": "",
+        },
+        headers=auth_headers,
+    )
+    assert resp.status_code == 201
+    data = resp.get_json()
+    assert data["email"] is None
+    assert data["canal"] is None
+    assert data["tipo_compra"] is None
+    assert data["telefono"] is None
+
+
+def test_canales_nuevos_disponibles(client, auth_headers):
+    resp = client.post(
+        "/api/clientes",
+        json={"razon_social": "Cliente linea", "canal": "Línea Eventos"},
+        headers=auth_headers,
+    )
+    assert resp.status_code == 201
+    assert resp.get_json()["canal"] == "Línea Eventos"
+
+
 def test_search_and_pagination(client, auth_headers):
     for i in range(3):
         client.post(
@@ -123,8 +153,8 @@ def test_search_and_pagination(client, auth_headers):
 def test_import_clientes_csv(client, auth_headers):
     csv_content = (
         "ruc,razon_social,direccion,localidad,canal,tipo_compra\n"
-        "90011111-2,Hilados SA,Av. Espana 456,Encarnacion,Minorista,Credito\n"
-        "90011111-2,Hilados SA duplicado,Av. Espana 456,Encarnacion,Minorista,Credito\n"
+        "90011111-2,Hilados SA,Av. Espana 456,Encarnacion,Línea Casual,Credito\n"
+        "90011111-2,Hilados SA duplicado,Av. Espana 456,Encarnacion,Línea Casual,Credito\n"
     )
     data = {"file": (io.BytesIO(csv_content.encode()), "clientes.csv")}
     resp = client.post(

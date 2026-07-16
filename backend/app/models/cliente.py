@@ -2,7 +2,13 @@ from datetime import datetime, timezone
 
 from app.extensions import db
 
-CANALES = ("Mayorista", "Minorista", "Distribuidora", "Fabricante")
+CANALES = (
+    "Línea Uniformes",
+    "Línea Deportivo",
+    "Línea Casual",
+    "Línea Eventos",
+    "Línea Multicanal",
+)
 TIPOS_COMPRA = ("Contado", "Credito", "Cheque")
 
 

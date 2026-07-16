@@ -1,6 +1,19 @@
-from marshmallow import Schema, fields, validate
+from marshmallow import Schema, fields, pre_load, validate
 
 from app.models.cliente import CANALES, TIPOS_COMPRA
+
+CAMPOS_OPCIONALES_NORMALIZABLES = (
+    "codigo_cliente",
+    "ruc",
+    "localidad",
+    "barrio",
+    "direccion",
+    "telefono",
+    "email",
+    "canal",
+    "sub_canal",
+    "tipo_compra",
+)
 
 
 class ClienteSchema(Schema):
@@ -24,6 +37,16 @@ class ClienteSchema(Schema):
     estado = fields.Boolean(load_default=True)
     created_at = fields.String(dump_only=True)
     updated_at = fields.String(dump_only=True)
+
+    @pre_load
+    def normalizar_vacios(self, data, **kwargs):
+        if not isinstance(data, dict):
+            return data
+        data = dict(data)
+        for campo in CAMPOS_OPCIONALES_NORMALIZABLES:
+            if data.get(campo) == "":
+                data[campo] = None
+        return data
 
 
 cliente_schema = ClienteSchema()

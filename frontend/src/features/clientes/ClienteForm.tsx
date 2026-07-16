@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 
 import type { Cliente } from "../../api/types";
 import { colors } from "../../theme/colors";
-import { CANALES, SUB_CANALES_POR_CANAL, TIPOS_COMPRA } from "./canalOptions";
+import { CANALES, TIPOS_COMPRA } from "./canalOptions";
 import { createCliente, fetchNextClienteId, updateCliente, type ClienteInput } from "./clientesApi";
 import { MapPicker } from "./MapPicker";
 
@@ -49,8 +49,6 @@ export function ClienteForm({ cliente, onClose, onSaved }: ClienteFormProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sugerencia]);
 
-  const subCanalOptions = form.canal ? SUB_CANALES_POR_CANAL[form.canal] ?? [] : [];
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -60,6 +58,7 @@ export function ClienteForm({ cliente, onClose, onSaved }: ClienteFormProps) {
         ruc: form.ruc || null,
         canal: form.canal || null,
         tipo_compra: form.tipo_compra || null,
+        email: form.email || null,
       };
       if (cliente) {
         await updateCliente(cliente.id, payload);
@@ -111,7 +110,7 @@ export function ClienteForm({ cliente, onClose, onSaved }: ClienteFormProps) {
             <input
               id="razon_social"
               value={form.razon_social}
-              onChange={(e) => setForm({ ...form, razon_social: e.target.value })}
+              onChange={(e) => setForm({ ...form, razon_social: e.target.value.toUpperCase() })}
               required
             />
           </div>
@@ -120,7 +119,7 @@ export function ClienteForm({ cliente, onClose, onSaved }: ClienteFormProps) {
             <input
               id="localidad"
               value={form.localidad ?? ""}
-              onChange={(e) => setForm({ ...form, localidad: e.target.value })}
+              onChange={(e) => setForm({ ...form, localidad: e.target.value.toUpperCase() })}
             />
           </div>
           <div>
@@ -128,7 +127,7 @@ export function ClienteForm({ cliente, onClose, onSaved }: ClienteFormProps) {
             <input
               id="barrio"
               value={form.barrio ?? ""}
-              onChange={(e) => setForm({ ...form, barrio: e.target.value })}
+              onChange={(e) => setForm({ ...form, barrio: e.target.value.toUpperCase() })}
             />
           </div>
           <div style={{ gridColumn: "1 / -1" }}>
@@ -136,7 +135,7 @@ export function ClienteForm({ cliente, onClose, onSaved }: ClienteFormProps) {
             <input
               id="direccion"
               value={form.direccion ?? ""}
-              onChange={(e) => setForm({ ...form, direccion: e.target.value })}
+              onChange={(e) => setForm({ ...form, direccion: e.target.value.toUpperCase() })}
             />
           </div>
           <div>
@@ -161,7 +160,7 @@ export function ClienteForm({ cliente, onClose, onSaved }: ClienteFormProps) {
             <select
               id="canal"
               value={form.canal ?? ""}
-              onChange={(e) => setForm({ ...form, canal: e.target.value, sub_canal: "" })}
+              onChange={(e) => setForm({ ...form, canal: e.target.value })}
             >
               <option value="">Seleccionar...</option>
               {CANALES.map((c) => (
@@ -173,19 +172,11 @@ export function ClienteForm({ cliente, onClose, onSaved }: ClienteFormProps) {
           </div>
           <div>
             <label htmlFor="sub_canal">Sub Canal</label>
-            <select
+            <input
               id="sub_canal"
               value={form.sub_canal ?? ""}
               onChange={(e) => setForm({ ...form, sub_canal: e.target.value })}
-              disabled={!form.canal}
-            >
-              <option value="">Seleccionar...</option>
-              {subCanalOptions.map((sc) => (
-                <option key={sc} value={sc}>
-                  {sc}
-                </option>
-              ))}
-            </select>
+            />
           </div>
           <div>
             <label htmlFor="tipo_compra">Tipo Compra</label>
