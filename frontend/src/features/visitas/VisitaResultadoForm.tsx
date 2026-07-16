@@ -129,7 +129,7 @@ export function VisitaResultadoForm({ visita, onClose, onSaved }: VisitaResultad
             Cancelar
           </button>
           <button type="submit" className="btn btn-primary" disabled={saving}>
-            {saving ? "Guardando..." : "Guardar"}
+            {saving ? "Guardando..." : "Guardar Gestión"}
           </button>
         </div>
       </form>
