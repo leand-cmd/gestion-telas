@@ -5,6 +5,7 @@ import type { Visita } from "../../api/types";
 import { colors } from "../../theme/colors";
 import { fetchClientes } from "../clientes/clientesApi";
 import { addDays, NOMBRES_MES, startOfWeekMonday, toISODate } from "./calendarUtils";
+import { ReagendarVisitaForm } from "./ReagendarVisitaForm";
 import { VisitaDetalleModal } from "./VisitaDetalleModal";
 import { VisitaForm } from "./VisitaForm";
 import { VisitaResultadoForm } from "./VisitaResultadoForm";
@@ -22,6 +23,7 @@ export function VisitasList() {
   const [formOpen, setFormOpen] = useState(false);
   const [detalleVisita, setDetalleVisita] = useState<Visita | null>(null);
   const [registrandoResultado, setRegistrandoResultado] = useState<Visita | null>(null);
+  const [reagendando, setReagendando] = useState<Visita | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -230,6 +232,10 @@ export function VisitasList() {
             setDetalleVisita(null);
             setRegistrandoResultado(v);
           }}
+          onReagendar={(v) => {
+            setDetalleVisita(null);
+            setReagendando(v);
+          }}
         />
       )}
 
@@ -239,6 +245,17 @@ export function VisitasList() {
           onClose={() => setRegistrandoResultado(null)}
           onSaved={() => {
             setRegistrandoResultado(null);
+            refetch();
+          }}
+        />
+      )}
+
+      {reagendando && (
+        <ReagendarVisitaForm
+          visita={reagendando}
+          onClose={() => setReagendando(null)}
+          onSaved={() => {
+            setReagendando(null);
             refetch();
           }}
         />

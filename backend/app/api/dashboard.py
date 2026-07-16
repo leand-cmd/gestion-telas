@@ -117,7 +117,7 @@ def resumen():
     ]
 
     total_gestiones = sum(gestiones_dict.values())
-    gestiones_exitosas = gestiones_dict.get("Visita Exitosa - Carga de pedido", 0)
+    gestiones_exitosas = gestiones_dict.get("Venta Exitosa", 0)
     efectividad_gestiones_porcentaje = (
         round(gestiones_exitosas / total_gestiones * 100, 1) if total_gestiones > 0 else 0
     )

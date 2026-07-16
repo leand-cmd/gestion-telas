@@ -5,12 +5,14 @@ from app.extensions import db
 PROPOSITOS = ("Consulta", "Oferta", "Seguimiento", "Cierre")
 RESULTADOS = ("Interesado", "No interesado", "Requiere seguimiento")
 TIPOS_GESTION = (
-    "Visita Exitosa - Carga de pedido",
-    "Cliente sobrestockeado",
-    "Requiere seguimiento",
-    "No fue posible contactar",
-    "Cliente cambió proveedor",
-    "Otro",
+    "Solicita Muestras",
+    "Entrega de Muestras",
+    "Venta Exitosa",
+    "Sin Contacto",
+    "Visita Cancelada",
+    "Visita Reprogramada",
+    "Visita de Seguimiento",
+    "Visita sin éxito",
 )
 
 

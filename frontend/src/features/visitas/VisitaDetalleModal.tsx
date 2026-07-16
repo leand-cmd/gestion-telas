@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import type { Visita } from "../../api/types";
 import { colors } from "../../theme/colors";
 import { ESTADO_COLORS, ESTADO_LABELS } from "./visitaEstadoColors";
+import { TIPOS_GESTION_REAGENDABLES } from "./visitaOptions";
 import { cancelarVisita } from "./visitasApi";
 
 interface VisitaDetalleModalProps {
@@ -10,6 +11,7 @@ interface VisitaDetalleModalProps {
   onClose: () => void;
   onChanged: () => void;
   onRegistrarResultado: (visita: Visita) => void;
+  onReagendar: (visita: Visita) => void;
 }
 
 function Campo({ label, value }: { label: string; value: string | null | undefined }) {
@@ -29,8 +31,12 @@ export function VisitaDetalleModal({
   onClose,
   onChanged,
   onRegistrarResultado,
+  onReagendar,
 }: VisitaDetalleModalProps) {
   const c = ESTADO_COLORS[visita.estado];
+  const esReagendable =
+    visita.tipo_gestion != null &&
+    (TIPOS_GESTION_REAGENDABLES as readonly string[]).includes(visita.tipo_gestion);
 
   const handleCancelar = async () => {
     try {
@@ -93,6 +99,11 @@ export function VisitaDetalleModal({
           <button type="button" className="btn btn-secondary" onClick={onClose}>
             Cerrar
           </button>
+          {esReagendable && (
+            <button type="button" className="btn btn-primary" onClick={() => onReagendar(visita)}>
+              📅 Reagendar visita
+            </button>
+          )}
           {visita.estado === "programada" && (
             <>
               <button type="button" className="btn btn-danger" onClick={handleCancelar}>

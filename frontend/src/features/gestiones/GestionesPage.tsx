@@ -112,7 +112,7 @@ export function GestionesPage() {
             </div>
             <DonutChart percentage={resumen.efectividad_gestiones_porcentaje} color={colors.pinkNeon} />
             <div style={{ fontSize: 12, color: colors.grayNeutral, textAlign: "center" }}>
-              resultó en carga de pedido
+              resultó en Venta Exitosa
             </div>
           </div>
         </div>

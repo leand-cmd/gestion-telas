@@ -35,7 +35,7 @@ def test_crear_y_registrar_resultado_visita(client, auth_headers):
         json={
             "resultado": "Interesado",
             "notas_visita": "Buena reunion",
-            "tipo_gestion": "Visita Exitosa - Carga de pedido",
+            "tipo_gestion": "Venta Exitosa",
         },
         headers=auth_headers,
     )
@@ -43,7 +43,7 @@ def test_crear_y_registrar_resultado_visita(client, auth_headers):
     data = resp2.get_json()
     assert data["estado"] == "realizada"
     assert data["resultado"] == "Interesado"
-    assert data["tipo_gestion"] == "Visita Exitosa - Carga de pedido"
+    assert data["tipo_gestion"] == "Venta Exitosa"
 
 
 def test_filtro_por_tipo_gestion(client, auth_headers):
@@ -58,18 +58,16 @@ def test_filtro_por_tipo_gestion(client, auth_headers):
     ).get_json()
     client.patch(
         f"/api/visitas/{v1['id']}/resultado",
-        json={"resultado": "Interesado", "tipo_gestion": "Visita Exitosa - Carga de pedido"},
+        json={"resultado": "Interesado", "tipo_gestion": "Venta Exitosa"},
         headers=auth_headers,
     )
     client.patch(
         f"/api/visitas/{v2['id']}/resultado",
-        json={"resultado": "Requiere seguimiento", "tipo_gestion": "Requiere seguimiento"},
+        json={"resultado": "Requiere seguimiento", "tipo_gestion": "Visita de Seguimiento"},
         headers=auth_headers,
     )
 
-    resp = client.get(
-        "/api/visitas?tipo_gestion=Visita Exitosa - Carga de pedido", headers=auth_headers
-    )
+    resp = client.get("/api/visitas?tipo_gestion=Venta Exitosa", headers=auth_headers)
     data = resp.get_json()
     assert data["total"] == 1
     assert data["items"][0]["id"] == v1["id"]

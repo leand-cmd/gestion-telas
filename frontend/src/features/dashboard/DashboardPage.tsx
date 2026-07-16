@@ -63,7 +63,7 @@ export function DashboardPage() {
           </h3>
           <DonutChart percentage={data.efectividad_gestiones_porcentaje} color={colors.pinkNeon} />
           <div style={{ fontSize: 13, color: "#4a4a5a", textAlign: "center" }}>
-            de las gestiones de este mes resultaron en carga de pedido
+            de las gestiones de este mes resultaron en Venta Exitosa
           </div>
         </div>
 

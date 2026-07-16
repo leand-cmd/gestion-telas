@@ -48,7 +48,7 @@ def test_cobertura_y_gestiones(client, auth_headers):
     ).get_json()
     client.patch(
         f"/api/visitas/{visita1['id']}/resultado",
-        json={"resultado": "Interesado", "tipo_gestion": "Visita Exitosa - Carga de pedido"},
+        json={"resultado": "Interesado", "tipo_gestion": "Venta Exitosa"},
         headers=auth_headers,
     )
 
@@ -64,7 +64,7 @@ def test_cobertura_y_gestiones(client, auth_headers):
     ).get_json()
     client.patch(
         f"/api/visitas/{visita2['id']}/resultado",
-        json={"resultado": "Requiere seguimiento", "tipo_gestion": "Requiere seguimiento"},
+        json={"resultado": "Requiere seguimiento", "tipo_gestion": "Visita de Seguimiento"},
         headers=auth_headers,
     )
 
@@ -74,6 +74,6 @@ def test_cobertura_y_gestiones(client, auth_headers):
     assert data["total_clientes_cartera"] == 2
     assert data["clientes_visitados_mes"] == 2
     assert data["cobertura_porcentaje"] == 100.0
-    assert {"tipo": "Visita Exitosa - Carga de pedido", "cantidad": 1} in data["gestiones_por_tipo"]
-    assert {"tipo": "Requiere seguimiento", "cantidad": 1} in data["gestiones_por_tipo"]
+    assert {"tipo": "Venta Exitosa", "cantidad": 1} in data["gestiones_por_tipo"]
+    assert {"tipo": "Visita de Seguimiento", "cantidad": 1} in data["gestiones_por_tipo"]
     assert data["efectividad_gestiones_porcentaje"] == 50.0
