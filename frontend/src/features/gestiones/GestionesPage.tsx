@@ -56,8 +56,6 @@ export function GestionesPage() {
     { header: "Fecha", render: (v) => v.fecha },
     { header: "Cliente", render: (v) => v.cliente?.razon_social ?? "-", truncate: true },
     { header: "Tipo de gestión", render: (v) => v.tipo_gestion ?? "-", truncate: true },
-    { header: "Resultado", render: (v) => v.resultado ?? "-" },
-    { header: "Notas", render: (v) => v.notas_visita ?? "-", truncate: true },
     {
       header: "Acciones",
       render: (v) => (

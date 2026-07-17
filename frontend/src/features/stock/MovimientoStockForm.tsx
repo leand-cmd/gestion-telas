@@ -37,7 +37,7 @@ export function MovimientoStockForm({ producto, onClose, onSaved }: MovimientoSt
     <div className="modal-overlay">
       <form onSubmit={handleSubmit} className="card modal-card" style={{ maxWidth: 420 }}>
         <h3 style={{ margin: 0, color: colors.purpleDark }}>
-          Movimiento de stock — {producto.cod_sku}
+          Movimiento de stock — {producto.cod_producto}
         </h3>
         <p style={{ margin: 0, fontSize: 13, color: colors.grayNeutral }}>
           Stock actual: {producto.stock_actual}

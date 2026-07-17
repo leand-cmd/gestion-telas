@@ -30,7 +30,7 @@ export function ProductosExpandibles({ pedidoId }: ProductosExpandiblesProps) {
     <ul style={{ margin: "6px 0 0", paddingLeft: 18, fontSize: 12 }}>
       {(pedido?.detalles ?? []).map((d) => (
         <li key={d.id}>
-          {d.producto?.cod_sku} — {d.producto?.descripcion ?? ""} × {d.cantidad}
+          {d.producto?.cod_producto} — {d.producto?.descripcion_completa ?? ""} × {d.cantidad}
         </li>
       ))}
     </ul>

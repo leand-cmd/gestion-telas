@@ -21,7 +21,7 @@ export interface VisitaInput {
   cliente_id: number;
   asesor_id: number;
   fecha: string;
-  hora: string;
+  hora?: string | null;
   proposito?: string | null;
   direccion?: string | null;
   notas_previas?: string | null;
@@ -38,7 +38,7 @@ export async function updateVisita(id: number, input: Partial<VisitaInput>) {
 }
 
 export interface VisitaResultadoInput {
-  resultado: string;
+  resultado?: string | null;
   tipo_gestion?: string | null;
   duracion_actual?: number | null;
   presente_cliente?: boolean | null;

@@ -24,8 +24,8 @@ export function StockList() {
   const refetch = () => queryClient.invalidateQueries({ queryKey: ["stock"] });
 
   const columns: Column<StockItem>[] = [
-    { header: "SKU", render: (p) => p.cod_sku },
-    { header: "Descripción", render: (p) => p.descripcion ?? "-", truncate: true },
+    { header: "Cod Producto", render: (p) => p.cod_producto },
+    { header: "Descripción", render: (p) => p.descripcion_completa ?? "-", truncate: true },
     { header: "Stock actual", render: (p) => p.stock_actual },
     { header: "Stock mínimo", render: (p) => p.stock_minimo ?? "-" },
     {

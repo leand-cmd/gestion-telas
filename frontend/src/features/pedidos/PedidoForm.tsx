@@ -208,7 +208,7 @@ export function PedidoForm({ pedido, onClose, onSaved }: PedidoFormProps) {
                         <option value={0}>Seleccionar...</option>
                         {productos.map((p) => (
                           <option key={p.id} value={p.id}>
-                            {p.cod_sku} - {p.descripcion ?? ""}
+                            {p.cod_producto} - {p.descripcion_completa ?? ""}
                           </option>
                         ))}
                       </select>

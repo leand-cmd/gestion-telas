@@ -75,7 +75,7 @@ export function DashboardPage() {
             <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13 }}>
               {data.stock_bajo.map((p) => (
                 <li key={p.id}>
-                  {p.cod_sku} — {p.descripcion ?? ""} ({p.stock_actual}/{p.stock_minimo})
+                  {p.cod_producto} — {p.descripcion_completa ?? ""} ({p.stock_actual}/{p.stock_minimo})
                 </li>
               ))}
             </ul>
@@ -90,7 +90,7 @@ export function DashboardPage() {
             <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13 }}>
               {data.proximas_visitas.map((v) => (
                 <li key={v.id}>
-                  {v.fecha} {v.hora} — {v.cliente?.razon_social ?? "-"}
+                  {v.fecha} {v.hora ?? ""} — {v.cliente?.razon_social ?? "-"}
                 </li>
               ))}
             </ul>
@@ -120,7 +120,7 @@ export function DashboardPage() {
             <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13 }}>
               {data.top_productos.map(({ producto, cantidad_total }) => (
                 <li key={producto.id}>
-                  {producto.cod_sku} — {cantidad_total} unidades
+                  {producto.cod_producto} — {cantidad_total} unidades
                 </li>
               ))}
             </ul>

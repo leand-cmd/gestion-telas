@@ -37,9 +37,8 @@ export function ProductosList() {
   const refetch = () => queryClient.invalidateQueries({ queryKey: ["productos"] });
 
   const columns: Column<Producto>[] = [
-    { header: "SKU", render: (p) => p.cod_sku },
-    { header: "Descripción", render: (p) => p.descripcion ?? "-", truncate: true },
-    { header: "Color", render: (p) => p.color ?? "-" },
+    { header: "Cod Producto", render: (p) => p.cod_producto },
+    { header: "Descripción", render: (p) => p.descripcion_completa ?? "-", truncate: true },
     {
       header: "Precio",
       render: (p) => (p.precio != null ? `₲ ${p.precio.toLocaleString("es-PY")}` : "-"),
@@ -102,7 +101,7 @@ export function ProductosList() {
         <h2 style={{ margin: 0, color: colors.purpleDark }}>Productos</h2>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <input
-            placeholder="Buscar por SKU, descripción o color..."
+            placeholder="Buscar por Cod Producto, descripción o color..."
             value={q}
             onChange={(e) => {
               setQ(e.target.value);
@@ -185,9 +184,9 @@ export function ProductosList() {
                     marginBottom: 12,
                   }}
                 />
-                <div style={{ fontWeight: 700, fontSize: 14 }}>{p.cod_sku}</div>
+                <div style={{ fontWeight: 700, fontSize: 14 }}>{p.cod_producto}</div>
                 <div style={{ fontSize: 12, color: colors.grayNeutral, marginBottom: 6 }}>
-                  {p.descripcion ?? "-"}
+                  {p.descripcion_completa ?? "-"}
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <span
@@ -230,7 +229,7 @@ export function ProductosList() {
         <ConfirmDialog
           open
           title="Eliminar producto"
-          message={`¿Seguro que deseas eliminar "${deleting.cod_sku}"? Esta acción no se puede deshacer.`}
+          message={`¿Seguro que deseas eliminar "${deleting.cod_producto}"? Esta acción no se puede deshacer.`}
           onCancel={() => setDeleting(null)}
           onConfirm={async () => {
             try {

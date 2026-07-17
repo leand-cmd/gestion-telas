@@ -40,7 +40,7 @@ export function VisitaForm({ onClose, onSaved }: VisitaFormProps) {
     }
     setSaving(true);
     try {
-      await createVisita({ ...form, proposito: form.proposito || null });
+      await createVisita({ ...form, hora: form.hora || null, proposito: form.proposito || null });
       toast.success("Visita programada");
       onSaved();
     } catch (err: any) {
@@ -99,13 +99,12 @@ export function VisitaForm({ onClose, onSaved }: VisitaFormProps) {
             />
           </div>
           <div>
-            <label htmlFor="hora">Hora</label>
+            <label htmlFor="hora">Hora (opcional)</label>
             <input
               id="hora"
               type="time"
-              value={form.hora}
+              value={form.hora ?? ""}
               onChange={(e) => setForm({ ...form, hora: e.target.value })}
-              required
             />
           </div>
           <div>

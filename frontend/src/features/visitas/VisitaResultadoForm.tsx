@@ -3,8 +3,8 @@ import toast from "react-hot-toast";
 
 import type { Visita } from "../../api/types";
 import { colors } from "../../theme/colors";
-import { RESULTADOS, TIPOS_GESTION } from "./visitaOptions";
-import { registrarResultado, type VisitaResultadoInput } from "./visitasApi";
+import { TIPOS_GESTION } from "./visitaOptions";
+import { createVisita, registrarResultado } from "./visitasApi";
 
 interface VisitaResultadoFormProps {
   visita: Visita;
@@ -13,26 +13,42 @@ interface VisitaResultadoFormProps {
 }
 
 export function VisitaResultadoForm({ visita, onClose, onSaved }: VisitaResultadoFormProps) {
-  const [form, setForm] = useState<VisitaResultadoInput>({
-    resultado: visita.resultado ?? RESULTADOS[0],
-    tipo_gestion: visita.tipo_gestion ?? "",
-    duracion_actual: visita.duracion_actual ?? null,
-    presente_cliente: visita.presente_cliente ?? true,
-    productos_presentados: visita.productos_presentados ?? "",
-    notas_visita: visita.notas_visita ?? "",
-    proxima_accion: visita.proxima_accion ?? "",
-  });
+  const [tipoGestion, setTipoGestion] = useState(visita.tipo_gestion ?? "");
+  const [reprogramando, setReprogramando] = useState(false);
+  const [fecha, setFecha] = useState("");
+  const [hora, setHora] = useState("");
   const [saving, setSaving] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!tipoGestion) {
+      toast.error("Seleccioná un tipo de gestión");
+      return;
+    }
+    if (reprogramando && (!fecha || !hora)) {
+      toast.error("Completá la fecha y hora de la nueva visita");
+      return;
+    }
+
     setSaving(true);
     try {
-      await registrarResultado(visita.id, { ...form, tipo_gestion: form.tipo_gestion || null });
-      toast.success("Resultado registrado");
+      await registrarResultado(visita.id, { tipo_gestion: tipoGestion });
+
+      if (reprogramando) {
+        await createVisita({
+          cliente_id: visita.cliente_id,
+          asesor_id: visita.asesor_id,
+          fecha,
+          hora,
+          proposito: visita.proposito,
+          notas_previas: `Reprogramada desde la visita del ${visita.fecha} ${visita.hora ?? ""} (${tipoGestion}).`,
+        });
+      }
+
+      toast.success(reprogramando ? "Gestión registrada y visita reprogramada" : "Gestión registrada");
       onSaved();
     } catch (err: any) {
-      toast.error(err?.response?.data?.error || "No se pudo registrar el resultado");
+      toast.error(err?.response?.data?.error || "No se pudo guardar la gestión");
     } finally {
       setSaving(false);
     }
@@ -40,31 +56,18 @@ export function VisitaResultadoForm({ visita, onClose, onSaved }: VisitaResultad
 
   return (
     <div className="modal-overlay">
-      <form onSubmit={handleSubmit} className="card modal-card" style={{ maxWidth: 480 }}>
+      <form onSubmit={handleSubmit} className="card modal-card" style={{ maxWidth: 440 }}>
         <h3 style={{ margin: 0, color: colors.purpleDark }}>
-          Resultado de visita — {visita.cliente?.razon_social}
+          Gestión — {visita.cliente?.razon_social}
         </h3>
 
-        <div>
-          <label htmlFor="resultado">Resultado</label>
-          <select
-            id="resultado"
-            value={form.resultado}
-            onChange={(e) => setForm({ ...form, resultado: e.target.value })}
-          >
-            {RESULTADOS.map((r) => (
-              <option key={r} value={r}>
-                {r}
-              </option>
-            ))}
-          </select>
-        </div>
         <div>
           <label htmlFor="tipo_gestion">Tipo de gestión</label>
           <select
             id="tipo_gestion"
-            value={form.tipo_gestion ?? ""}
-            onChange={(e) => setForm({ ...form, tipo_gestion: e.target.value })}
+            value={tipoGestion}
+            onChange={(e) => setTipoGestion(e.target.value)}
+            required
           >
             <option value="">Seleccionar...</option>
             {TIPOS_GESTION.map((t) => (
@@ -74,62 +77,45 @@ export function VisitaResultadoForm({ visita, onClose, onSaved }: VisitaResultad
             ))}
           </select>
         </div>
-        <div>
-          <label htmlFor="duracion_actual">Duración (minutos)</label>
-          <input
-            id="duracion_actual"
-            type="number"
-            min={0}
-            value={form.duracion_actual ?? ""}
-            onChange={(e) =>
-              setForm({ ...form, duracion_actual: e.target.value ? Number(e.target.value) : null })
-            }
-          />
-        </div>
-        <div>
-          <label htmlFor="presente_cliente">¿El cliente estuvo presente?</label>
-          <select
-            id="presente_cliente"
-            value={form.presente_cliente ? "true" : "false"}
-            onChange={(e) => setForm({ ...form, presente_cliente: e.target.value === "true" })}
-          >
-            <option value="true">Sí</option>
-            <option value="false">No</option>
-          </select>
-        </div>
-        <div>
-          <label htmlFor="productos_presentados">Productos presentados</label>
-          <textarea
-            id="productos_presentados"
-            rows={2}
-            value={form.productos_presentados ?? ""}
-            onChange={(e) => setForm({ ...form, productos_presentados: e.target.value })}
-          />
-        </div>
-        <div>
-          <label htmlFor="notas_visita">Notas de la visita</label>
-          <textarea
-            id="notas_visita"
-            rows={2}
-            value={form.notas_visita ?? ""}
-            onChange={(e) => setForm({ ...form, notas_visita: e.target.value })}
-          />
-        </div>
-        <div>
-          <label htmlFor="proxima_accion">Próxima acción</label>
-          <input
-            id="proxima_accion"
-            value={form.proxima_accion ?? ""}
-            onChange={(e) => setForm({ ...form, proxima_accion: e.target.value })}
-          />
-        </div>
 
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
+        {reprogramando && (
+          <div className="form-grid">
+            <div>
+              <label htmlFor="fecha">Nueva fecha</label>
+              <input
+                id="fecha"
+                type="date"
+                value={fecha}
+                onChange={(e) => setFecha(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="hora">Nueva hora</label>
+              <input
+                id="hora"
+                type="time"
+                value={hora}
+                onChange={(e) => setHora(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+        )}
+
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
           <button type="button" className="btn btn-secondary" onClick={onClose}>
             Cancelar
           </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => setReprogramando((r) => !r)}
+          >
+            {reprogramando ? "No reprogramar" : "📅 Reprogramar Visita"}
+          </button>
           <button type="submit" className="btn btn-primary" disabled={saving}>
-            {saving ? "Guardando..." : "Guardar Gestión"}
+            {saving ? "Guardando..." : reprogramando ? "Guardar" : "Guardar Gestión"}
           </button>
         </div>
       </form>

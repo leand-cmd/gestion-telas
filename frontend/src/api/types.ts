@@ -31,23 +31,25 @@ export interface Cliente {
 
 export interface Producto {
   id: number;
-  cod_sku: string;
-  nro_producto: number | null;
-  descripcion: string | null;
-  clase: string | null;
-  categoria: string | null;
-  origen: string | null;
-  metros: number | null;
-  kilogramos: number | null;
-  piezas: number | null;
-  color: string | null;
+  cod_producto: string;
   marca: string | null;
+  linea: string | null;
+  categoria: string | null;
+  subcategoria: string | null;
+  cod_color: string | null;
+  color: string | null;
+  color_categoria: string | null;
+  codigo_base: string | null;
+  descripcion_completa: string | null;
+  diseno: string | null;
+  medida: string | null;
+  piezas: number | null;
   precio: number | null;
-  costo: number | null;
   stock_actual: number;
   stock_minimo: number | null;
   estado: boolean;
   imagen_url: string | null;
+  origen: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -126,7 +128,7 @@ export interface Visita {
   asesor_id: number;
   asesor: Usuario | null;
   fecha: string;
-  hora: string;
+  hora: string | null;
   proposito: string | null;
   direccion: string | null;
   notas_previas: string | null;

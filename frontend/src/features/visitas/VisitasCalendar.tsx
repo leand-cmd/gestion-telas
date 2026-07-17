@@ -79,7 +79,9 @@ export function VisitasCalendar({
           const esMesActual = viewMode === "semana" || date.getMonth() === anchorDate.getMonth();
           const esHoy = isSameDay(date, hoy);
           const esSeleccionado = selectedDate != null && isSameDay(date, selectedDate);
-          const visitasDia = (visitasPorDia.get(iso) ?? []).slice().sort((a, b) => a.hora.localeCompare(b.hora));
+          const visitasDia = (visitasPorDia.get(iso) ?? [])
+            .slice()
+            .sort((a, b) => (a.hora ?? "99:99").localeCompare(b.hora ?? "99:99"));
           const visibles = visitasDia.slice(0, maxChips);
           const restantes = visitasDia.length - visibles.length;
 
@@ -145,9 +147,9 @@ export function VisitasCalendar({
                       whiteSpace: "nowrap",
                       fontWeight: 600,
                     }}
-                    title={`${v.hora} — ${v.cliente?.razon_social ?? ""}`}
+                    title={`${v.hora ?? "Sin hora"} — ${v.cliente?.razon_social ?? ""}`}
                   >
-                    {v.hora} {v.cliente?.razon_social ?? ""}
+                    {v.hora ?? "Sin hora"} {v.cliente?.razon_social ?? ""}
                   </div>
                 );
               })}

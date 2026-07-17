@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 
 import type { Producto } from "../../api/types";
 import { colors } from "../../theme/colors";
-import { CATEGORIAS, CLASES, ORIGENES } from "./productoOptions";
+import { CATEGORIAS } from "./productoOptions";
 import {
   createProducto,
   updateProducto,
@@ -18,22 +18,24 @@ interface ProductoFormProps {
 }
 
 const EMPTY: ProductoInput = {
-  cod_sku: "",
-  nro_producto: null,
-  descripcion: "",
-  clase: "",
-  categoria: "",
-  origen: "",
-  metros: null,
-  kilogramos: null,
-  piezas: null,
-  color: "#6C5DD1",
+  cod_producto: "",
   marca: "",
+  linea: "",
+  categoria: "",
+  subcategoria: "",
+  cod_color: "",
+  color: "",
+  color_categoria: "",
+  codigo_base: "",
+  descripcion_completa: "",
+  diseno: "",
+  medida: "",
+  piezas: null,
   precio: null,
-  costo: null,
   stock_actual: 0,
   stock_minimo: 0,
   estado: true,
+  origen: "",
 };
 
 export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) {
@@ -45,6 +47,10 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!form.cod_producto.trim()) {
+      toast.error("El Cod Producto es obligatorio");
+      return;
+    }
     setSaving(true);
     try {
       let saved: Producto;
@@ -75,48 +81,29 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
 
         <div className="form-grid">
           <div>
-            <label htmlFor="cod_sku">Cod SKU</label>
+            <label htmlFor="cod_producto">Cod Producto</label>
             <input
-              id="cod_sku"
-              value={form.cod_sku}
-              onChange={(e) => setForm({ ...form, cod_sku: e.target.value })}
+              id="cod_producto"
+              value={form.cod_producto}
+              onChange={(e) => setForm({ ...form, cod_producto: e.target.value })}
               required
             />
           </div>
           <div>
-            <label htmlFor="nro_producto">Nro Producto</label>
+            <label htmlFor="marca">Marca</label>
             <input
-              id="nro_producto"
-              type="number"
-              value={form.nro_producto ?? ""}
-              onChange={(e) =>
-                setForm({ ...form, nro_producto: e.target.value ? Number(e.target.value) : null })
-              }
-            />
-          </div>
-          <div style={{ gridColumn: "1 / -1" }}>
-            <label htmlFor="descripcion">Descripción</label>
-            <textarea
-              id="descripcion"
-              rows={2}
-              value={form.descripcion ?? ""}
-              onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
+              id="marca"
+              value={form.marca ?? ""}
+              onChange={(e) => setForm({ ...form, marca: e.target.value })}
             />
           </div>
           <div>
-            <label htmlFor="clase">Clase</label>
-            <select
-              id="clase"
-              value={form.clase ?? ""}
-              onChange={(e) => setForm({ ...form, clase: e.target.value })}
-            >
-              <option value="">Seleccionar...</option>
-              {CLASES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+            <label htmlFor="linea">Línea</label>
+            <input
+              id="linea"
+              value={form.linea ?? ""}
+              onChange={(e) => setForm({ ...form, linea: e.target.value })}
+            />
           </div>
           <div>
             <label htmlFor="categoria">Categoría</label>
@@ -134,50 +121,67 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
             </select>
           </div>
           <div>
+            <label htmlFor="subcategoria">Subcategoría</label>
+            <input
+              id="subcategoria"
+              value={form.subcategoria ?? ""}
+              onChange={(e) => setForm({ ...form, subcategoria: e.target.value })}
+            />
+          </div>
+          <div>
+            <label htmlFor="cod_color">Cod Color</label>
+            <input
+              id="cod_color"
+              value={form.cod_color ?? ""}
+              onChange={(e) => setForm({ ...form, cod_color: e.target.value })}
+            />
+          </div>
+          <div>
+            <label htmlFor="color">Color</label>
+            <input
+              id="color"
+              value={form.color ?? ""}
+              onChange={(e) => setForm({ ...form, color: e.target.value })}
+            />
+          </div>
+          <div>
+            <label htmlFor="color_categoria">Color Categoría</label>
+            <input
+              id="color_categoria"
+              value={form.color_categoria ?? ""}
+              onChange={(e) => setForm({ ...form, color_categoria: e.target.value })}
+            />
+          </div>
+          <div>
+            <label htmlFor="codigo_base">Código Base</label>
+            <input
+              id="codigo_base"
+              value={form.codigo_base ?? ""}
+              onChange={(e) => setForm({ ...form, codigo_base: e.target.value })}
+            />
+          </div>
+          <div>
+            <label htmlFor="diseno">Diseño</label>
+            <input
+              id="diseno"
+              value={form.diseno ?? ""}
+              onChange={(e) => setForm({ ...form, diseno: e.target.value })}
+            />
+          </div>
+          <div>
+            <label htmlFor="medida">Medida</label>
+            <input
+              id="medida"
+              value={form.medida ?? ""}
+              onChange={(e) => setForm({ ...form, medida: e.target.value })}
+            />
+          </div>
+          <div>
             <label htmlFor="origen">Origen</label>
-            <select
+            <input
               id="origen"
               value={form.origen ?? ""}
               onChange={(e) => setForm({ ...form, origen: e.target.value })}
-            >
-              <option value="">Seleccionar...</option>
-              {ORIGENES.map((o) => (
-                <option key={o} value={o}>
-                  {o}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="marca">Marca</label>
-            <input
-              id="marca"
-              value={form.marca ?? ""}
-              onChange={(e) => setForm({ ...form, marca: e.target.value })}
-            />
-          </div>
-          <div>
-            <label htmlFor="metros">Metros</label>
-            <input
-              id="metros"
-              type="number"
-              step="0.001"
-              value={form.metros ?? ""}
-              onChange={(e) =>
-                setForm({ ...form, metros: e.target.value ? Number(e.target.value) : null })
-              }
-            />
-          </div>
-          <div>
-            <label htmlFor="kilogramos">Kilogramos</label>
-            <input
-              id="kilogramos"
-              type="number"
-              step="0.001"
-              value={form.kilogramos ?? ""}
-              onChange={(e) =>
-                setForm({ ...form, kilogramos: e.target.value ? Number(e.target.value) : null })
-              }
             />
           </div>
           <div>
@@ -192,24 +196,6 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
             />
           </div>
           <div>
-            <label htmlFor="color">Color</label>
-            <div style={{ display: "flex", gap: 8 }}>
-              <input
-                id="color"
-                type="color"
-                style={{ width: 48, padding: 2 }}
-                value={/^#/.test(form.color ?? "") ? (form.color as string) : "#6C5DD1"}
-                onChange={(e) => setForm({ ...form, color: e.target.value })}
-              />
-              <input
-                aria-label="Nombre del color"
-                placeholder="Nombre del color"
-                value={form.color ?? ""}
-                onChange={(e) => setForm({ ...form, color: e.target.value })}
-              />
-            </div>
-          </div>
-          <div>
             <label htmlFor="precio">Precio</label>
             <input
               id="precio"
@@ -218,18 +204,6 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
               value={form.precio ?? ""}
               onChange={(e) =>
                 setForm({ ...form, precio: e.target.value ? Number(e.target.value) : null })
-              }
-            />
-          </div>
-          <div>
-            <label htmlFor="costo">Costo</label>
-            <input
-              id="costo"
-              type="number"
-              step="0.01"
-              value={form.costo ?? ""}
-              onChange={(e) =>
-                setForm({ ...form, costo: e.target.value ? Number(e.target.value) : null })
               }
             />
           </div>
@@ -263,12 +237,21 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
             </select>
           </div>
           <div>
-            <label htmlFor="imagen">Imagen del producto</label>
+            <label htmlFor="imagen">Seleccionar imagen</label>
             <input
               id="imagen"
               type="file"
               accept="image/png,image/jpeg,image/webp"
               onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+            />
+          </div>
+          <div style={{ gridColumn: "1 / -1" }}>
+            <label htmlFor="descripcion_completa">Descripción Completa</label>
+            <textarea
+              id="descripcion_completa"
+              rows={4}
+              value={form.descripcion_completa ?? ""}
+              onChange={(e) => setForm({ ...form, descripcion_completa: e.target.value })}
             />
           </div>
         </div>

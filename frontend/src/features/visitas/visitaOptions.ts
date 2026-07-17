@@ -1,5 +1,4 @@
 export const PROPOSITOS = ["Consulta", "Oferta", "Seguimiento", "Cierre"] as const;
-export const RESULTADOS = ["Interesado", "No interesado", "Requiere seguimiento"] as const;
 export const TIPOS_GESTION = [
   "Solicita Muestras",
   "Entrega de Muestras",
@@ -9,10 +8,4 @@ export const TIPOS_GESTION = [
   "Visita Reprogramada",
   "Visita de Seguimiento",
   "Visita sin éxito",
-] as const;
-
-export const TIPOS_GESTION_REAGENDABLES = [
-  "Visita Cancelada",
-  "Visita Reprogramada",
-  "Visita de Seguimiento",
 ] as const;

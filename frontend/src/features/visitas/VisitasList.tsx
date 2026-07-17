@@ -1,17 +1,18 @@
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
+import { ConfirmDialog } from "../../components/ConfirmDialog";
 import type { Visita } from "../../api/types";
 import { colors } from "../../theme/colors";
 import { fetchClientes } from "../clientes/clientesApi";
 import { addDays, NOMBRES_MES, startOfWeekMonday, toISODate } from "./calendarUtils";
-import { ReagendarVisitaForm } from "./ReagendarVisitaForm";
 import { VisitaDetalleModal } from "./VisitaDetalleModal";
 import { VisitaForm } from "./VisitaForm";
 import { VisitaResultadoForm } from "./VisitaResultadoForm";
 import { VisitasCalendar } from "./VisitasCalendar";
 import { colorParaEstadoVisita, labelParaEstadoVisita } from "./visitaEstadoColors";
-import { fetchVisitas } from "./visitasApi";
+import { deleteVisita, fetchVisitas } from "./visitasApi";
 
 type ViewMode = "mes" | "semana";
 
@@ -23,7 +24,7 @@ export function VisitasList() {
   const [formOpen, setFormOpen] = useState(false);
   const [detalleVisita, setDetalleVisita] = useState<Visita | null>(null);
   const [registrandoResultado, setRegistrandoResultado] = useState<Visita | null>(null);
-  const [reagendando, setReagendando] = useState<Visita | null>(null);
+  const [eliminando, setEliminando] = useState<Visita | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -60,7 +61,7 @@ export function VisitasList() {
     ? visitas
         .filter((v) => v.fecha === toISODate(selectedDate))
         .slice()
-        .sort((a, b) => a.hora.localeCompare(b.hora))
+        .sort((a, b) => (a.hora ?? "99:99").localeCompare(b.hora ?? "99:99"))
     : [];
 
   // eslint-disable-next-line no-console
@@ -209,7 +210,7 @@ export function VisitasList() {
                       title="Registrar gestión"
                     >
                       <div style={{ fontWeight: 700, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: colors.purpleDark }}>
-                        {v.hora} — {v.cliente?.razon_social ?? "-"}
+                        {v.hora ?? "Sin hora"} — {v.cliente?.razon_social ?? "-"}
                       </div>
                       <div style={{ fontSize: 12, color: colors.grayNeutral }}>{v.proposito ?? "-"}</div>
                     </div>
@@ -248,9 +249,9 @@ export function VisitasList() {
             setDetalleVisita(null);
             setRegistrandoResultado(v);
           }}
-          onReagendar={(v) => {
+          onEliminar={(v) => {
             setDetalleVisita(null);
-            setReagendando(v);
+            setEliminando(v);
           }}
         />
       )}
@@ -266,13 +267,22 @@ export function VisitasList() {
         />
       )}
 
-      {reagendando && (
-        <ReagendarVisitaForm
-          visita={reagendando}
-          onClose={() => setReagendando(null)}
-          onSaved={() => {
-            setReagendando(null);
-            refetch();
+      {eliminando && (
+        <ConfirmDialog
+          open
+          title="Eliminar visita"
+          message={`¿Seguro que deseas eliminar la visita de "${eliminando.cliente?.razon_social}" del ${eliminando.fecha}? Esta acción no se puede deshacer.`}
+          onCancel={() => setEliminando(null)}
+          onConfirm={async () => {
+            try {
+              await deleteVisita(eliminando.id);
+              toast.success("Visita eliminada");
+              refetch();
+            } catch {
+              toast.error("No se pudo eliminar la visita");
+            } finally {
+              setEliminando(null);
+            }
           }}
         />
       )}
