@@ -191,8 +191,12 @@ export function VisitasList() {
                       gap: 8,
                     }}
                   >
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <div
+                      style={{ minWidth: 0, cursor: "pointer" }}
+                      onClick={() => setRegistrandoResultado(v)}
+                      title="Registrar gestión"
+                    >
+                      <div style={{ fontWeight: 700, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: colors.purpleDark }}>
                         {v.hora} — {v.cliente?.razon_social ?? "-"}
                       </div>
                       <div style={{ fontSize: 12, color: colors.grayNeutral }}>{v.proposito ?? "-"}</div>
