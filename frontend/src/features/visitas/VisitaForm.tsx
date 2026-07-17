@@ -19,7 +19,6 @@ const EMPTY: VisitaInput = {
   fecha: "",
   hora: "",
   proposito: "",
-  direccion: "",
   notas_previas: "",
 };
 
@@ -123,14 +122,6 @@ export function VisitaForm({ onClose, onSaved }: VisitaFormProps) {
                 </option>
               ))}
             </select>
-          </div>
-          <div>
-            <label htmlFor="direccion">Dirección</label>
-            <input
-              id="direccion"
-              value={form.direccion ?? ""}
-              onChange={(e) => setForm({ ...form, direccion: e.target.value })}
-            />
           </div>
           <div style={{ gridColumn: "1 / -1" }}>
             <label htmlFor="notas_previas">Notas previas</label>
