@@ -10,7 +10,7 @@ import { VisitaDetalleModal } from "./VisitaDetalleModal";
 import { VisitaForm } from "./VisitaForm";
 import { VisitaResultadoForm } from "./VisitaResultadoForm";
 import { VisitasCalendar } from "./VisitasCalendar";
-import { ESTADO_COLORS, ESTADO_LABELS } from "./visitaEstadoColors";
+import { colorParaEstadoVisita, labelParaEstadoVisita } from "./visitaEstadoColors";
 import { fetchVisitas } from "./visitasApi";
 
 type ViewMode = "mes" | "semana";
@@ -62,6 +62,18 @@ export function VisitasList() {
         .slice()
         .sort((a, b) => a.hora.localeCompare(b.hora))
     : [];
+
+  // eslint-disable-next-line no-console
+  console.log("[Visitas] rango consultado:", desde, "->", hasta, "| total traidas:", visitas.length);
+  // eslint-disable-next-line no-console
+  console.log("[Visitas] visitas traidas:", visitas);
+  // eslint-disable-next-line no-console
+  console.log(
+    "[Visitas] visitas del día",
+    selectedDate ? toISODate(selectedDate) : null,
+    ":",
+    visitasDelDia
+  );
 
   const cambiarPeriodo = (direccion: 1 | -1) => {
     if (viewMode === "semana") {
@@ -177,7 +189,7 @@ export function VisitasList() {
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {visitasDelDia.map((v) => {
-                const c = ESTADO_COLORS[v.estado];
+                const c = colorParaEstadoVisita(v.estado);
                 return (
                   <div
                     key={v.id}
@@ -203,7 +215,7 @@ export function VisitasList() {
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                       <span className="badge" style={{ background: c.bg, color: c.text }}>
-                        {ESTADO_LABELS[v.estado]}
+                        {labelParaEstadoVisita(v.estado)}
                       </span>
                       <button className="btn btn-secondary" onClick={() => setDetalleVisita(v)}>
                         Ver detalle

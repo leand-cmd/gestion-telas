@@ -2,7 +2,7 @@ import toast from "react-hot-toast";
 
 import type { Visita } from "../../api/types";
 import { colors } from "../../theme/colors";
-import { ESTADO_COLORS, ESTADO_LABELS } from "./visitaEstadoColors";
+import { colorParaEstadoVisita, labelParaEstadoVisita } from "./visitaEstadoColors";
 import { TIPOS_GESTION_REAGENDABLES } from "./visitaOptions";
 import { cancelarVisita } from "./visitasApi";
 
@@ -33,7 +33,7 @@ export function VisitaDetalleModal({
   onRegistrarResultado,
   onReagendar,
 }: VisitaDetalleModalProps) {
-  const c = ESTADO_COLORS[visita.estado];
+  const c = colorParaEstadoVisita(visita.estado);
   const esReagendable =
     visita.tipo_gestion != null &&
     (TIPOS_GESTION_REAGENDABLES as readonly string[]).includes(visita.tipo_gestion);
@@ -59,7 +59,7 @@ export function VisitaDetalleModal({
             className="badge"
             style={{ background: c.bg, color: c.text, flexShrink: 0 }}
           >
-            {ESTADO_LABELS[visita.estado]}
+            {labelParaEstadoVisita(visita.estado)}
           </span>
         </div>
 

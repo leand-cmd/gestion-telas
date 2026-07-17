@@ -1,7 +1,7 @@
 import type { Visita } from "../../api/types";
 import { colors } from "../../theme/colors";
 import { addDays, DIAS_SEMANA, isSameDay, startOfWeekMonday, toISODate } from "./calendarUtils";
-import { ESTADO_COLORS } from "./visitaEstadoColors";
+import { colorParaEstadoVisita } from "./visitaEstadoColors";
 
 interface VisitasCalendarProps {
   anchorDate: Date;
@@ -126,7 +126,7 @@ export function VisitasCalendar({
               </div>
 
               {visibles.map((v) => {
-                const c = ESTADO_COLORS[v.estado];
+                const c = colorParaEstadoVisita(v.estado);
                 return (
                   <div
                     key={v.id}
