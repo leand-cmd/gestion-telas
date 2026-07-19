@@ -68,14 +68,14 @@ export function DashboardPage() {
         </div>
 
         <div className="card">
-          <h3 style={{ margin: "0 0 8px", color: colors.purpleDark }}>Stock bajo mínimo</h3>
+          <h3 style={{ margin: "0 0 8px", color: colors.purpleDark }}>Stock más bajo</h3>
           {data.stock_bajo.length === 0 ? (
             <p style={{ fontSize: 13, color: colors.grayNeutral }}>Sin alertas de stock.</p>
           ) : (
             <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13 }}>
               {data.stock_bajo.map((p) => (
                 <li key={p.id}>
-                  {p.cod_producto} — {p.descripcion_completa ?? ""} ({p.stock_actual}/{p.stock_minimo})
+                  {p.cod_producto} — {p.nombre_tejido} ({p.stock_rollos ?? 0} rollos)
                 </li>
               ))}
             </ul>

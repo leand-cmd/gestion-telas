@@ -3,7 +3,6 @@ import type { PaginatedResponse, StockItem, StockMovimiento, StockMovimientoTipo
 
 export interface StockFilters {
   q?: string;
-  bajo_minimo?: boolean;
   page?: number;
   per_page?: number;
 }

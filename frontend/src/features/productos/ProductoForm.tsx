@@ -3,7 +3,6 @@ import toast from "react-hot-toast";
 
 import type { Producto } from "../../api/types";
 import { colors } from "../../theme/colors";
-import { CATEGORIAS } from "./productoOptions";
 import {
   createProducto,
   updateProducto,
@@ -19,23 +18,23 @@ interface ProductoFormProps {
 
 const EMPTY: ProductoInput = {
   cod_producto: "",
-  marca: "",
-  linea: "",
-  categoria: "",
-  subcategoria: "",
+  cod_categoria: "",
   cod_color: "",
-  color: "",
-  color_categoria: "",
-  codigo_base: "",
-  descripcion_completa: "",
-  diseno: "",
-  medida: "",
-  piezas: null,
-  precio: null,
-  stock_actual: 0,
-  stock_minimo: 0,
-  estado: true,
-  origen: "",
+  nombre_tejido: "",
+  color_general: "",
+  color_descripcion: "",
+  categoria: "",
+  sub_categoria: "",
+  composicion: "",
+  ancho_cm: null,
+  gramaje_gm2: null,
+  precio_rollo: null,
+  precio_media_rollo: null,
+  precio_corte: null,
+  unidad_medida: "metro",
+  stock_rollos: 0,
+  activo: true,
+  descripcion: "",
 };
 
 export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) {
@@ -49,6 +48,14 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
     e.preventDefault();
     if (!form.cod_producto.trim()) {
       toast.error("El Cod Producto es obligatorio");
+      return;
+    }
+    if (!form.nombre_tejido.trim()) {
+      toast.error("El Nombre del tejido es obligatorio");
+      return;
+    }
+    if (!form.categoria.trim()) {
+      toast.error("La Categoría es obligatoria");
       return;
     }
     setSaving(true);
@@ -90,42 +97,37 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
             />
           </div>
           <div>
-            <label htmlFor="marca">Marca</label>
+            <label htmlFor="cod_categoria">Cod Categoría</label>
             <input
-              id="marca"
-              value={form.marca ?? ""}
-              onChange={(e) => setForm({ ...form, marca: e.target.value })}
+              id="cod_categoria"
+              value={form.cod_categoria ?? ""}
+              onChange={(e) => setForm({ ...form, cod_categoria: e.target.value })}
             />
           </div>
           <div>
-            <label htmlFor="linea">Línea</label>
+            <label htmlFor="nombre_tejido">Nombre Tejido</label>
             <input
-              id="linea"
-              value={form.linea ?? ""}
-              onChange={(e) => setForm({ ...form, linea: e.target.value })}
+              id="nombre_tejido"
+              value={form.nombre_tejido}
+              onChange={(e) => setForm({ ...form, nombre_tejido: e.target.value })}
+              required
             />
           </div>
           <div>
             <label htmlFor="categoria">Categoría</label>
-            <select
+            <input
               id="categoria"
-              value={form.categoria ?? ""}
+              value={form.categoria}
               onChange={(e) => setForm({ ...form, categoria: e.target.value })}
-            >
-              <option value="">Seleccionar...</option>
-              {CATEGORIAS.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+              required
+            />
           </div>
           <div>
-            <label htmlFor="subcategoria">Subcategoría</label>
+            <label htmlFor="sub_categoria">Subcategoría</label>
             <input
-              id="subcategoria"
-              value={form.subcategoria ?? ""}
-              onChange={(e) => setForm({ ...form, subcategoria: e.target.value })}
+              id="sub_categoria"
+              value={form.sub_categoria ?? ""}
+              onChange={(e) => setForm({ ...form, sub_categoria: e.target.value })}
             />
           </div>
           <div>
@@ -137,100 +139,115 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
             />
           </div>
           <div>
-            <label htmlFor="color">Color</label>
+            <label htmlFor="color_general">Color General</label>
             <input
-              id="color"
-              value={form.color ?? ""}
-              onChange={(e) => setForm({ ...form, color: e.target.value })}
+              id="color_general"
+              value={form.color_general ?? ""}
+              onChange={(e) => setForm({ ...form, color_general: e.target.value })}
             />
           </div>
           <div>
-            <label htmlFor="color_categoria">Color Categoría</label>
+            <label htmlFor="color_descripcion">Color Descripción</label>
             <input
-              id="color_categoria"
-              value={form.color_categoria ?? ""}
-              onChange={(e) => setForm({ ...form, color_categoria: e.target.value })}
+              id="color_descripcion"
+              value={form.color_descripcion ?? ""}
+              onChange={(e) => setForm({ ...form, color_descripcion: e.target.value })}
             />
           </div>
           <div>
-            <label htmlFor="codigo_base">Código Base</label>
+            <label htmlFor="composicion">Composición</label>
             <input
-              id="codigo_base"
-              value={form.codigo_base ?? ""}
-              onChange={(e) => setForm({ ...form, codigo_base: e.target.value })}
+              id="composicion"
+              value={form.composicion ?? ""}
+              onChange={(e) => setForm({ ...form, composicion: e.target.value })}
             />
           </div>
           <div>
-            <label htmlFor="diseno">Diseño</label>
+            <label htmlFor="unidad_medida">Unidad de Medida</label>
             <input
-              id="diseno"
-              value={form.diseno ?? ""}
-              onChange={(e) => setForm({ ...form, diseno: e.target.value })}
+              id="unidad_medida"
+              value={form.unidad_medida ?? ""}
+              onChange={(e) => setForm({ ...form, unidad_medida: e.target.value })}
             />
           </div>
           <div>
-            <label htmlFor="medida">Medida</label>
+            <label htmlFor="ancho_cm">Ancho (cm)</label>
             <input
-              id="medida"
-              value={form.medida ?? ""}
-              onChange={(e) => setForm({ ...form, medida: e.target.value })}
-            />
-          </div>
-          <div>
-            <label htmlFor="origen">Origen</label>
-            <input
-              id="origen"
-              value={form.origen ?? ""}
-              onChange={(e) => setForm({ ...form, origen: e.target.value })}
-            />
-          </div>
-          <div>
-            <label htmlFor="piezas">Piezas</label>
-            <input
-              id="piezas"
-              type="number"
-              value={form.piezas ?? ""}
-              onChange={(e) =>
-                setForm({ ...form, piezas: e.target.value ? Number(e.target.value) : null })
-              }
-            />
-          </div>
-          <div>
-            <label htmlFor="precio">Precio</label>
-            <input
-              id="precio"
+              id="ancho_cm"
               type="number"
               step="0.01"
-              value={form.precio ?? ""}
+              value={form.ancho_cm ?? ""}
               onChange={(e) =>
-                setForm({ ...form, precio: e.target.value ? Number(e.target.value) : null })
+                setForm({ ...form, ancho_cm: e.target.value ? Number(e.target.value) : null })
               }
             />
           </div>
           <div>
-            <label htmlFor="stock_actual">Stock Actual</label>
+            <label htmlFor="gramaje_gm2">Gramaje (g/m²)</label>
             <input
-              id="stock_actual"
+              id="gramaje_gm2"
               type="number"
-              value={form.stock_actual}
-              onChange={(e) => setForm({ ...form, stock_actual: Number(e.target.value) })}
+              step="0.01"
+              value={form.gramaje_gm2 ?? ""}
+              onChange={(e) =>
+                setForm({ ...form, gramaje_gm2: e.target.value ? Number(e.target.value) : null })
+              }
             />
           </div>
           <div>
-            <label htmlFor="stock_minimo">Stock Mínimo</label>
+            <label htmlFor="precio_rollo">Precio Rollo</label>
             <input
-              id="stock_minimo"
+              id="precio_rollo"
               type="number"
-              value={form.stock_minimo ?? 0}
-              onChange={(e) => setForm({ ...form, stock_minimo: Number(e.target.value) })}
+              step="0.01"
+              value={form.precio_rollo ?? ""}
+              onChange={(e) =>
+                setForm({ ...form, precio_rollo: e.target.value ? Number(e.target.value) : null })
+              }
             />
           </div>
           <div>
-            <label htmlFor="estado">Estado</label>
+            <label htmlFor="precio_media_rollo">Precio 1/2 Rollo</label>
+            <input
+              id="precio_media_rollo"
+              type="number"
+              step="0.01"
+              value={form.precio_media_rollo ?? ""}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  precio_media_rollo: e.target.value ? Number(e.target.value) : null,
+                })
+              }
+            />
+          </div>
+          <div>
+            <label htmlFor="precio_corte">Precio Corte</label>
+            <input
+              id="precio_corte"
+              type="number"
+              step="0.01"
+              value={form.precio_corte ?? ""}
+              onChange={(e) =>
+                setForm({ ...form, precio_corte: e.target.value ? Number(e.target.value) : null })
+              }
+            />
+          </div>
+          <div>
+            <label htmlFor="stock_rollos">Stock (rollos)</label>
+            <input
+              id="stock_rollos"
+              type="number"
+              value={form.stock_rollos ?? 0}
+              onChange={(e) => setForm({ ...form, stock_rollos: Number(e.target.value) })}
+            />
+          </div>
+          <div>
+            <label htmlFor="activo">Estado</label>
             <select
-              id="estado"
-              value={form.estado ? "true" : "false"}
-              onChange={(e) => setForm({ ...form, estado: e.target.value === "true" })}
+              id="activo"
+              value={form.activo ? "true" : "false"}
+              onChange={(e) => setForm({ ...form, activo: e.target.value === "true" })}
             >
               <option value="true">Activo</option>
               <option value="false">Inactivo</option>
@@ -246,12 +263,12 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
             />
           </div>
           <div style={{ gridColumn: "1 / -1" }}>
-            <label htmlFor="descripcion_completa">Descripción Completa</label>
+            <label htmlFor="descripcion">Descripción</label>
             <textarea
-              id="descripcion_completa"
+              id="descripcion"
               rows={4}
-              value={form.descripcion_completa ?? ""}
-              onChange={(e) => setForm({ ...form, descripcion_completa: e.target.value })}
+              value={form.descripcion ?? ""}
+              onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
             />
           </div>
         </div>

@@ -4,7 +4,7 @@ import type { ImportReport, PaginatedResponse, Producto } from "../../api/types"
 export interface ProductoFilters {
   q?: string;
   categoria?: string;
-  estado?: string;
+  activo?: string;
   page?: number;
   per_page?: number;
 }
@@ -18,7 +18,7 @@ export async function fetchProductos(filters: ProductoFilters) {
 
 export type ProductoInput = Omit<
   Producto,
-  "id" | "created_at" | "updated_at" | "imagen_url"
+  "id" | "created_at" | "updated_at" | "url_imagen"
 >;
 
 export async function createProducto(input: ProductoInput) {

@@ -40,7 +40,7 @@ export function MovimientoStockForm({ producto, onClose, onSaved }: MovimientoSt
           Movimiento de stock — {producto.cod_producto}
         </h3>
         <p style={{ margin: 0, fontSize: 13, color: colors.grayNeutral }}>
-          Stock actual: {producto.stock_actual}
+          Stock actual: {producto.stock_rollos ?? 0} rollos
         </p>
 
         <div>

@@ -32,24 +32,24 @@ export interface Cliente {
 export interface Producto {
   id: number;
   cod_producto: string;
-  marca: string | null;
-  linea: string | null;
-  categoria: string | null;
-  subcategoria: string | null;
+  cod_categoria: string | null;
   cod_color: string | null;
-  color: string | null;
-  color_categoria: string | null;
-  codigo_base: string | null;
-  descripcion_completa: string | null;
-  diseno: string | null;
-  medida: string | null;
-  piezas: number | null;
-  precio: number | null;
-  stock_actual: number;
-  stock_minimo: number | null;
-  estado: boolean;
-  imagen_url: string | null;
-  origen: string | null;
+  nombre_tejido: string;
+  color_general: string | null;
+  color_descripcion: string | null;
+  categoria: string;
+  sub_categoria: string | null;
+  composicion: string | null;
+  ancho_cm: number | null;
+  gramaje_gm2: number | null;
+  precio_rollo: number | null;
+  precio_media_rollo: number | null;
+  precio_corte: number | null;
+  unidad_medida: string | null;
+  stock_rollos: number | null;
+  activo: boolean;
+  url_imagen: string | null;
+  descripcion: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -102,9 +102,7 @@ export interface Venta {
   updated_at: string;
 }
 
-export interface StockItem extends Producto {
-  bajo_minimo: boolean;
-}
+export type StockItem = Producto;
 
 export type StockMovimientoTipo = "entrada" | "salida" | "ajuste";
 
@@ -170,6 +168,7 @@ export interface PaginatedResponse<T> {
 export interface ImportReport {
   total_filas: number;
   insertados: number;
+  actualizados?: number;
   errores: { fila: number; error: unknown }[];
   cantidad_errores: number;
 }

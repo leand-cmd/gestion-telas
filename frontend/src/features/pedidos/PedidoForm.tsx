@@ -54,7 +54,7 @@ export function PedidoForm({ pedido, onClose, onSaved }: PedidoFormProps) {
   const total = useMemo(() => {
     return lineas.reduce((acc, l) => {
       const producto = productos.find((p) => p.id === l.producto_id);
-      const valor = l.valor_unitario ?? producto?.precio ?? 0;
+      const valor = l.valor_unitario ?? producto?.precio_rollo ?? 0;
       return acc + valor * l.cantidad;
     }, 0);
   }, [lineas, productos]);
@@ -195,7 +195,7 @@ export function PedidoForm({ pedido, onClose, onSaved }: PedidoFormProps) {
             <tbody>
               {lineas.map((l) => {
                 const producto = productos.find((p) => p.id === l.producto_id);
-                const valor = l.valor_unitario ?? producto?.precio ?? 0;
+                const valor = l.valor_unitario ?? producto?.precio_rollo ?? 0;
                 return (
                   <tr key={l.key}>
                     <td>
@@ -208,7 +208,7 @@ export function PedidoForm({ pedido, onClose, onSaved }: PedidoFormProps) {
                         <option value={0}>Seleccionar...</option>
                         {productos.map((p) => (
                           <option key={p.id} value={p.id}>
-                            {p.cod_producto} - {p.descripcion_completa ?? ""}
+                            {p.cod_producto} - {p.nombre_tejido}
                           </option>
                         ))}
                       </select>

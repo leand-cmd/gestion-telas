@@ -36,35 +36,17 @@ export function ProductosList() {
 
   const refetch = () => queryClient.invalidateQueries({ queryKey: ["productos"] });
 
+  const formatPrecio = (v: number | null) => (v != null ? `₲ ${v.toLocaleString("es-PY")}` : "-");
+
   const columns: Column<Producto>[] = [
     { header: "Cod Producto", render: (p) => p.cod_producto },
-    { header: "Descripción", render: (p) => p.descripcion_completa ?? "-", truncate: true },
-    {
-      header: "Precio",
-      render: (p) => (p.precio != null ? `₲ ${p.precio.toLocaleString("es-PY")}` : "-"),
-    },
-    {
-      header: "Stock",
-      render: (p) => (
-        <span
-          className={`badge ${
-            p.stock_minimo != null && p.stock_actual < p.stock_minimo
-              ? "badge-inactive"
-              : "badge-active"
-          }`}
-        >
-          {p.stock_actual}
-        </span>
-      ),
-    },
-    {
-      header: "Estado",
-      render: (p) => (
-        <span className={`badge ${p.estado ? "badge-active" : "badge-inactive"}`}>
-          {p.estado ? "Activo" : "Inactivo"}
-        </span>
-      ),
-    },
+    { header: "Nombre", render: (p) => p.nombre_tejido, truncate: true },
+    { header: "Color", render: (p) => p.color_general ?? "-" },
+    { header: "Rollo", render: (p) => formatPrecio(p.precio_rollo) },
+    { header: "1/2 Rollo", render: (p) => formatPrecio(p.precio_media_rollo) },
+    { header: "Corte", render: (p) => formatPrecio(p.precio_corte) },
+    { header: "Ancho", render: (p) => (p.ancho_cm != null ? `${p.ancho_cm} cm` : "-") },
+    { header: "Gramaje", render: (p) => (p.gramaje_gm2 != null ? `${p.gramaje_gm2} g/m²` : "-") },
     {
       header: "Acciones",
       render: (p) => (
@@ -101,7 +83,7 @@ export function ProductosList() {
         <h2 style={{ margin: 0, color: colors.purpleDark }}>Productos</h2>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <input
-            placeholder="Buscar por Cod Producto, descripción o color..."
+            placeholder="Buscar por Cod Producto, tejido o color..."
             value={q}
             onChange={(e) => {
               setQ(e.target.value);
@@ -178,28 +160,17 @@ export function ProductosList() {
                     width: "100%",
                     height: 140,
                     borderRadius: 16,
-                    background: p.imagen_url
-                      ? `url(${p.imagen_url}) center/cover`
+                    background: p.url_imagen
+                      ? `url(${p.url_imagen}) center/cover`
                       : colors.gradientBackground,
                     marginBottom: 12,
                   }}
                 />
                 <div style={{ fontWeight: 700, fontSize: 14 }}>{p.cod_producto}</div>
                 <div style={{ fontSize: 12, color: colors.grayNeutral, marginBottom: 6 }}>
-                  {p.descripcion_completa ?? "-"}
+                  {p.nombre_tejido}
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <span
-                    style={{
-                      width: 14,
-                      height: 14,
-                      borderRadius: "50%",
-                      background: /^#/.test(p.color ?? "") ? (p.color as string) : "#ccc",
-                      border: "1px solid #ddd",
-                    }}
-                  />
-                  <span style={{ fontSize: 12 }}>{p.color ?? "-"}</span>
-                </div>
+                <div style={{ fontSize: 12 }}>{p.color_general ?? "-"}</div>
               </div>
             ))}
           </div>
