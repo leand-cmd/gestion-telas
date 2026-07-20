@@ -24,9 +24,6 @@ class Config:
         if origin.strip()
     ]
 
-    UPLOAD_FOLDER = os.environ.get(
-        "UPLOAD_FOLDER", os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
-    )
     MAX_CONTENT_LENGTH = 10 * 1024 * 1024  # 10 MB
 
     GOOGLE_MAPS_API_KEY = os.environ.get("GOOGLE_MAPS_API_KEY", "")

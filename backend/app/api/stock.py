@@ -12,14 +12,6 @@ from app.utils.pagination import paginate
 stock_bp = Blueprint("stock", __name__)
 
 
-def _producto_stock_dict(producto: Producto) -> dict:
-    data = producto.to_dict()
-    data["bajo_minimo"] = (
-        producto.stock_minimo is not None and producto.stock_actual < producto.stock_minimo
-    )
-    return data
-
-
 @stock_bp.get("")
 @jwt_required()
 def listar_stock():
@@ -28,17 +20,14 @@ def listar_stock():
     q = request.args.get("q", "").strip()
     if q:
         like = f"%{q}%"
-        query = query.filter(or_(Producto.cod_sku.ilike(like), Producto.descripcion.ilike(like)))
+        query = query.filter(or_(Producto.cod_producto.ilike(like), Producto.nombre_tejido.ilike(like)))
 
-    if (request.args.get("bajo_minimo") or "").lower() == "true":
-        query = query.filter(Producto.stock_actual < Producto.stock_minimo)
-
-    query = query.order_by(Producto.cod_sku.asc())
+    query = query.order_by(Producto.cod_producto.asc())
 
     result = paginate(query)
     return jsonify(
         {
-            "items": [_producto_stock_dict(p) for p in result["items"]],
+            "items": [p.to_dict() for p in result["items"]],
             "page": result["page"],
             "per_page": result["per_page"],
             "total": result["total"],
@@ -83,10 +72,10 @@ def crear_movimiento():
         return jsonify({"error": "El producto indicado no existe"}), 400
 
     delta = data["cantidad"] if data["tipo"] in ("entrada", "ajuste") else -data["cantidad"]
-    if producto.stock_actual + delta < 0:
+    if (producto.stock_rollos or 0) + delta < 0:
         return jsonify({"error": "El movimiento dejaria el stock en negativo"}), 400
 
-    producto.stock_actual += delta
+    producto.stock_rollos = (producto.stock_rollos or 0) + delta
     movimiento = StockMovimiento(
         producto_id=producto.id,
         tipo=data["tipo"],

@@ -49,8 +49,8 @@ def resumen():
     ).count()
 
     stock_bajo = (
-        Producto.query.filter(Producto.stock_actual < Producto.stock_minimo)
-        .order_by(Producto.stock_actual.asc())
+        Producto.query.filter(Producto.activo.is_(True))
+        .order_by(Producto.stock_rollos.asc())
         .limit(10)
         .all()
     )

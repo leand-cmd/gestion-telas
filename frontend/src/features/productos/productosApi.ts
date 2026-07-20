@@ -16,10 +16,7 @@ export async function fetchProductos(filters: ProductoFilters) {
   return data;
 }
 
-export type ProductoInput = Omit<
-  Producto,
-  "id" | "created_at" | "updated_at" | "url_imagen"
->;
+export type ProductoInput = Omit<Producto, "id" | "created_at" | "updated_at">;
 
 export async function createProducto(input: ProductoInput) {
   const { data } = await apiClient.post<Producto>("/productos", input);
@@ -35,13 +32,13 @@ export async function deleteProducto(id: number) {
   await apiClient.delete(`/productos/${id}`);
 }
 
-export async function uploadProductoImagen(id: number, file: File) {
+export async function uploadImagenProducto(file: File) {
   const formData = new FormData();
   formData.append("file", file);
-  const { data } = await apiClient.post<Producto>(`/productos/${id}/imagen`, formData, {
+  const { data } = await apiClient.post<{ url: string }>("/productos/upload", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
-  return data;
+  return data.url;
 }
 
 export async function importProductos(file: File) {

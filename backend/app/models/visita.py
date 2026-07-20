@@ -23,7 +23,7 @@ class Visita(db.Model):
     cliente_id = db.Column(db.Integer, db.ForeignKey("clientes.id"), nullable=False)
     asesor_id = db.Column(db.Integer, db.ForeignKey("usuarios.id"), nullable=False)
     fecha = db.Column(db.Date, nullable=False)
-    hora = db.Column(db.Time, nullable=False)
+    hora = db.Column(db.Time, nullable=True)
     proposito = db.Column(db.String(50))
     direccion = db.Column(db.String(500))
     notas_previas = db.Column(db.Text)

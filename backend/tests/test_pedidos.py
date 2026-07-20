@@ -3,7 +3,13 @@ def cliente_payload(ruc="80099999-1"):
 
 
 def producto_payload(sku="TEL-PED-1"):
-    return {"cod_sku": sku, "descripcion": "Tela test", "precio": 1000, "stock_actual": 50}
+    return {
+        "cod_producto": sku,
+        "nombre_tejido": "Tela test",
+        "categoria": "Tejido plano",
+        "precio_rollo": 1000,
+        "stock_rollos": 50,
+    }
 
 
 def crear_cliente_y_producto(client, auth_headers):

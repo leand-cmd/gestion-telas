@@ -6,7 +6,7 @@ import { colors } from "../../theme/colors";
 import {
   createProducto,
   updateProducto,
-  uploadProductoImagen,
+  uploadImagenProducto,
   type ProductoInput,
 } from "./productosApi";
 
@@ -34,6 +34,7 @@ const EMPTY: ProductoInput = {
   unidad_medida: "metro",
   stock_rollos: 0,
   activo: true,
+  url_imagen: null,
   descripcion: "",
 };
 
@@ -41,8 +42,22 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
   const [form, setForm] = useState<ProductoInput>(
     producto ? { ...EMPTY, ...producto } : EMPTY
   );
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const handleImageUpload = async (file: File | null) => {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const url = await uploadImagenProducto(file);
+      setForm((prev) => ({ ...prev, url_imagen: url }));
+      toast.success("Imagen subida");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || "No se pudo subir la imagen");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -60,16 +75,12 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
     }
     setSaving(true);
     try {
-      let saved: Producto;
       if (producto) {
-        saved = await updateProducto(producto.id, form);
+        await updateProducto(producto.id, form);
         toast.success("Producto actualizado");
       } else {
-        saved = await createProducto(form);
+        await createProducto(form);
         toast.success("Producto creado");
-      }
-      if (imageFile) {
-        await uploadProductoImagen(saved.id, imageFile);
       }
       onSaved();
     } catch (err: any) {
@@ -259,8 +270,19 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
               id="imagen"
               type="file"
               accept="image/png,image/jpeg,image/webp"
-              onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+              disabled={uploading}
+              onChange={(e) => handleImageUpload(e.target.files?.[0] ?? null)}
             />
+            {uploading && (
+              <span style={{ fontSize: 12, color: colors.grayNeutral }}>Subiendo...</span>
+            )}
+            {form.url_imagen && !uploading && (
+              <img
+                src={form.url_imagen}
+                alt="Vista previa"
+                style={{ marginTop: 8, height: 60, borderRadius: 8, objectFit: "cover" }}
+              />
+            )}
           </div>
           <div style={{ gridColumn: "1 / -1" }}>
             <label htmlFor="descripcion">Descripción</label>
@@ -277,7 +299,7 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
           <button type="button" className="btn btn-secondary" onClick={onClose}>
             Cancelar
           </button>
-          <button type="submit" className="btn btn-primary" disabled={saving}>
+          <button type="submit" className="btn btn-primary" disabled={saving || uploading}>
             {saving ? "Guardando..." : "Guardar"}
           </button>
         </div>

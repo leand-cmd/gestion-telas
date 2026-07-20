@@ -24,11 +24,11 @@ Aplicación de gestión de ventas para empresa de telas. Backend Flask + Postgre
 
 - Python 3.12+
 - Node.js 20+
-- Una base de datos PostgreSQL (recomendado: Railway) o Docker
+- Una base de datos PostgreSQL (recomendado: Railway)
 
 ---
 
-## Opción A — Desarrollo local sin Docker
+## Desarrollo local
 
 ### Backend
 
@@ -61,51 +61,33 @@ Sin `VITE_GOOGLE_MAPS_API_KEY`, el formulario de clientes usa campos manuales de
 
 ---
 
-## Opción B — Desarrollo local con Docker Compose
-
-Levanta Postgres + backend + frontend con un solo comando, sin instalar Python/Node localmente.
-
-```bash
-cp .env.example .env    # completar los valores que necesites (los demás tienen default de desarrollo)
-docker-compose up --build
-```
-
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:5000/api
-- Postgres: localhost:5432
-
-El frontend, dentro de Docker, llama a `/api` y nginx lo reenvía internamente al contenedor del backend (no hace falta configurar `VITE_API_URL` para este modo).
-
----
-
 ## Despliegue en Railway
 
-Railway **no** orquesta el `docker-compose.yml` — cada servicio se despliega por separado, cada uno leyendo su propio `Dockerfile`. `docker-compose.yml` es solo para desarrollo local (Opción B).
+Cada servicio se despliega por separado, sin Docker — Railway detecta el proyecto Python/Node con **Railpack** y usa el `Procfile`/`package.json` de cada carpeta como comando de arranque.
 
 1. **Base de datos**: en el proyecto de Railway, agregar el plugin **PostgreSQL**. Railway genera automáticamente la variable `DATABASE_URL` (referenciable desde otros servicios como `${{Postgres.DATABASE_URL}}`).
 
-2. **Backend**: crear un servicio nuevo apuntando a este repo, con **Root Directory = `backend`** (para que Railway detecte `backend/Dockerfile`). Variables de entorno:
+2. **Backend**: crear un servicio nuevo apuntando a este repo, con **Root Directory = `backend`**. Variables de entorno:
    - `DATABASE_URL` → referencia a la del plugin de Postgres
    - `SECRET_KEY`, `JWT_SECRET_KEY` → strings aleatorios largos
    - `CORS_ORIGINS` → la URL pública que Railway asigne al frontend
    - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `EMAIL_COLABORADORES` → si se quiere habilitar el envío de pedidos por email
    - `GOOGLE_MAPS_API_KEY`, `GOOGLE_CALENDAR_CLIENT_ID`, `GOOGLE_CALENDAR_CLIENT_SECRET` → opcionales
-   - `CLOUDINARY_URL` → opcional, para reemplazar el almacenamiento local de imágenes
+   - `CLOUDINARY_URL` → opcional, para las imágenes de productos
 
-   El contenedor corre `flask db upgrade` antes de levantar `gunicorn`, así que las migraciones se aplican en cada deploy.
+   El `Procfile` (`web: flask db upgrade && gunicorn --bind 0.0.0.0:$PORT wsgi:app`) corre las migraciones pendientes una sola vez, antes de levantar `gunicorn`, en cada deploy.
 
-3. **Frontend**: crear otro servicio apuntando al mismo repo, con **Root Directory = `frontend`** (usa `frontend/Dockerfile`). Como Vite incrusta las variables `VITE_*` en el build, hay que definirlas como **variables de build** en Railway:
+3. **Frontend**: crear otro servicio apuntando al mismo repo, con **Root Directory = `frontend`**. Como Vite incrusta las variables `VITE_*` en el build, hay que definirlas como **variables de build** en Railway:
    - `VITE_API_URL` → URL pública del servicio backend + `/api` (ej: `https://lucma-backend-production.up.railway.app/api`)
    - `VITE_GOOGLE_MAPS_API_KEY` → opcional
 
-4. Cada servicio recibe un dominio público `*.up.railway.app` (o un dominio propio si se configura). Railway inyecta `PORT` automáticamente; ambos Dockerfiles ya están preparados para escucharlo.
+4. Cada servicio recibe un dominio público `*.up.railway.app` (o un dominio propio si se configura). Railway inyecta `PORT` automáticamente.
 
 ---
 
 ## Estructura
 
 ```
-backend/    API Flask (modelos, esquema completo de BD, endpoints REST, Dockerfile)
-frontend/   SPA React + TypeScript (Vite, Dockerfile + nginx)
-docker-compose.yml   Orquestación solo para desarrollo local
+backend/    API Flask (modelos, esquema completo de BD, endpoints REST, Procfile)
+frontend/   SPA React + TypeScript (Vite)
 ```

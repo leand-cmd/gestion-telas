@@ -1,39 +1,39 @@
 import csv
 import io
-import os
-import uuid
 
-from flask import Blueprint, Response, current_app, jsonify, request, send_from_directory
+from flask import Blueprint, Response, jsonify, request
 from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
 from sqlalchemy import or_
-from werkzeug.utils import secure_filename
 
 from app.extensions import db
 from app.models.producto import Producto
 from app.schemas.producto_schema import producto_schema, producto_update_schema
+from app.utils.cloudinary_upload import CloudinaryNotConfiguredError, upload_imagen
 from app.utils.importers import ImportError_, build_import_report, read_tabular_file
+from app.utils.karretel_precios import buscar_precio_karretel
 from app.utils.pagination import paginate
 
 productos_bp = Blueprint("productos", __name__)
 
 CSV_COLUMNS = [
-    "cod_sku",
-    "nro_producto",
-    "descripcion",
-    "clase",
+    "cod_producto",
+    "cod_categoria",
+    "cod_color",
+    "nombre_tejido",
+    "color_general",
+    "color_descripcion",
     "categoria",
-    "origen",
-    "metros",
-    "kilogramos",
-    "piezas",
-    "color",
-    "marca",
-    "precio",
-    "costo",
-    "stock_actual",
-    "stock_minimo",
-    "estado",
+    "sub_categoria",
+    "composicion",
+    "ancho_cm",
+    "gramaje_gm2",
+    "precio_rollo",
+    "precio_media_rollo",
+    "precio_corte",
+    "unidad_medida",
+    "stock_rollos",
+    "activo",
 ]
 
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
@@ -49,9 +49,9 @@ def listar_productos():
         like = f"%{q}%"
         query = query.filter(
             or_(
-                Producto.cod_sku.ilike(like),
-                Producto.descripcion.ilike(like),
-                Producto.color.ilike(like),
+                Producto.cod_producto.ilike(like),
+                Producto.nombre_tejido.ilike(like),
+                Producto.color_general.ilike(like),
             )
         )
 
@@ -59,11 +59,11 @@ def listar_productos():
     if categoria:
         query = query.filter(Producto.categoria == categoria)
 
-    estado = request.args.get("estado")
-    if estado is not None and estado != "":
-        query = query.filter(Producto.estado == (estado.lower() == "true"))
+    activo = request.args.get("activo")
+    if activo is not None and activo != "":
+        query = query.filter(Producto.activo == (activo.lower() == "true"))
 
-    query = query.order_by(Producto.cod_sku.asc())
+    query = query.order_by(Producto.cod_producto.asc())
 
     result = paginate(query)
     return jsonify(
@@ -85,8 +85,8 @@ def crear_producto():
     except ValidationError as err:
         return jsonify({"errors": err.messages}), 400
 
-    if Producto.query.filter_by(cod_sku=data["cod_sku"]).first():
-        return jsonify({"error": "Ya existe un producto con ese SKU"}), 409
+    if Producto.query.filter_by(cod_producto=data["cod_producto"]).first():
+        return jsonify({"error": "Ya existe un producto con ese Cod Producto"}), 409
 
     producto = Producto(**data)
     db.session.add(producto)
@@ -110,9 +110,9 @@ def actualizar_producto(producto_id):
     except ValidationError as err:
         return jsonify({"errors": err.messages}), 400
 
-    if "cod_sku" in data and data["cod_sku"] != producto.cod_sku:
-        if Producto.query.filter_by(cod_sku=data["cod_sku"]).first():
-            return jsonify({"error": "Ya existe un producto con ese SKU"}), 409
+    if "cod_producto" in data and data["cod_producto"] != producto.cod_producto:
+        if Producto.query.filter_by(cod_producto=data["cod_producto"]).first():
+            return jsonify({"error": "Ya existe un producto con ese Cod Producto"}), 409
 
     for key, value in data.items():
         setattr(producto, key, value)
@@ -130,11 +130,9 @@ def eliminar_producto(producto_id):
     return "", 204
 
 
-@productos_bp.post("/<int:producto_id>/imagen")
+@productos_bp.post("/upload")
 @jwt_required()
-def subir_imagen_producto(producto_id):
-    producto = Producto.query.get_or_404(producto_id)
-
+def upload_imagen_producto():
     file = request.files.get("file")
     if not file or not file.filename:
         return jsonify({"error": "No se envio ninguna imagen"}), 400
@@ -143,20 +141,12 @@ def subir_imagen_producto(producto_id):
     if ext not in ALLOWED_IMAGE_EXTENSIONS:
         return jsonify({"error": "Formato de imagen no soportado"}), 400
 
-    filename = secure_filename(f"{producto.cod_sku}-{uuid.uuid4().hex[:8]}.{ext}")
-    folder = os.path.join(current_app.config["UPLOAD_FOLDER"], "productos")
-    os.makedirs(folder, exist_ok=True)
-    file.save(os.path.join(folder, filename))
+    try:
+        url = upload_imagen(file)
+    except CloudinaryNotConfiguredError as err:
+        return jsonify({"error": str(err)}), 400
 
-    producto.imagen_url = f"/api/productos/imagenes/{filename}"
-    db.session.commit()
-    return jsonify(producto.to_dict())
-
-
-@productos_bp.get("/imagenes/<path:filename>")
-def servir_imagen_producto(filename):
-    folder = os.path.join(current_app.config["UPLOAD_FOLDER"], "productos")
-    return send_from_directory(folder, filename)
+    return jsonify({"url": url})
 
 
 @productos_bp.post("/import")
@@ -171,49 +161,79 @@ def importar_productos():
     except ImportError_ as err:
         return jsonify({"error": str(err)}), 400
 
+    # Alias de columnas que en los maestros reales vienen con otro nombre
+    # (ej. Maestro_Limpio.xlsx trae "Descripcion_Completa" y "Stock" en vez
+    # de nuestros nombres de campo). read_tabular_file ya normaliza
+    # mayusculas/espacios/acentos a snake_case; esto cubre los casos donde
+    # el nombre de la columna origen es directamente distinto al campo.
+    COLUMN_ALIASES = {
+        "descripcion_completa": "descripcion",
+        "stock": "stock_rollos",
+    }
+
     errors = []
     inserted = 0
+    updated = 0
     for idx, row in enumerate(rows, start=2):
+        for origen, destino in COLUMN_ALIASES.items():
+            if row.get(destino) in (None, "") and row.get(origen) not in (None, ""):
+                row[destino] = row[origen]
+
+        nombre_tejido = (row.get("nombre_tejido") or "").strip()
+        precio_karretel = buscar_precio_karretel(nombre_tejido) or {}
+
+        def _precio(campo):
+            valor = row.get(campo)
+            if valor not in (None, ""):
+                return valor
+            return precio_karretel.get(campo)
+
         try:
             data = producto_schema.load(
                 {
-                    "cod_sku": row.get("cod_sku", "").strip(),
-                    "nro_producto": row.get("nro_producto") or None,
+                    "cod_producto": (row.get("cod_producto") or "").strip(),
+                    "cod_categoria": row.get("cod_categoria") or None,
+                    "cod_color": row.get("cod_color") or None,
+                    "nombre_tejido": nombre_tejido,
+                    "color_general": row.get("color_general") or None,
+                    "color_descripcion": row.get("color_descripcion") or None,
+                    "categoria": (row.get("categoria") or "").strip(),
+                    "sub_categoria": row.get("sub_categoria") or None,
+                    "composicion": row.get("composicion") or None,
+                    "ancho_cm": row.get("ancho_cm") or None,
+                    "gramaje_gm2": row.get("gramaje_gm2") or None,
+                    "precio_rollo": _precio("precio_rollo"),
+                    "precio_media_rollo": _precio("precio_media_rollo"),
+                    "precio_corte": _precio("precio_corte"),
+                    "unidad_medida": row.get("unidad_medida") or "metro",
+                    "stock_rollos": row.get("stock_rollos") or 0,
                     "descripcion": row.get("descripcion") or None,
-                    "clase": row.get("clase") or None,
-                    "categoria": row.get("categoria") or None,
-                    "origen": row.get("origen") or None,
-                    "metros": row.get("metros") or None,
-                    "kilogramos": row.get("kilogramos") or None,
-                    "piezas": row.get("piezas") or None,
-                    "color": row.get("color") or None,
-                    "marca": row.get("marca") or None,
-                    "precio": row.get("precio") or None,
-                    "costo": row.get("costo") or None,
-                    "stock_actual": row.get("stock_actual") or 0,
-                    "stock_minimo": row.get("stock_minimo") or 0,
-                    "estado": (row.get("estado", "true") or "true").lower() != "false",
+                    "activo": (row.get("activo", "true") or "true").lower() != "false",
                 }
             )
         except ValidationError as err:
             errors.append({"fila": idx, "error": err.messages})
             continue
 
-        if Producto.query.filter_by(cod_sku=data["cod_sku"]).first():
-            errors.append({"fila": idx, "error": f"SKU {data['cod_sku']} ya existe"})
-            continue
-
-        db.session.add(Producto(**data))
-        inserted += 1
+        existente = Producto.query.filter_by(cod_producto=data["cod_producto"]).first()
+        if existente:
+            for key, value in data.items():
+                setattr(existente, key, value)
+            updated += 1
+        else:
+            db.session.add(Producto(**data))
+            inserted += 1
 
     db.session.commit()
-    return jsonify(build_import_report(len(rows), inserted, errors))
+    report = build_import_report(len(rows), inserted, errors)
+    report["actualizados"] = updated
+    return jsonify(report)
 
 
 @productos_bp.get("/export")
 @jwt_required()
 def exportar_productos():
-    productos = Producto.query.order_by(Producto.cod_sku.asc()).all()
+    productos = Producto.query.order_by(Producto.cod_producto.asc()).all()
 
     buffer = io.StringIO()
     writer = csv.DictWriter(buffer, fieldnames=CSV_COLUMNS)

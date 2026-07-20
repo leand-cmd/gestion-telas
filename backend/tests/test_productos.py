@@ -1,23 +1,24 @@
 import io
 
 
-def producto_payload(sku="TEL-001"):
+def producto_payload(cod="TEL-001"):
     return {
-        "cod_sku": sku,
-        "nro_producto": 1001,
-        "descripcion": "Tela de algodon estampada",
-        "clase": "Algodon",
-        "categoria": "Tela",
-        "origen": "Nacional",
-        "metros": 50.5,
-        "kilogramos": 12.3,
-        "piezas": 10,
-        "color": "Azul",
-        "marca": "TelaSur",
-        "precio": 25000,
-        "costo": 15000,
-        "stock_actual": 100,
-        "stock_minimo": 10,
+        "cod_producto": cod,
+        "cod_categoria": "TEJ",
+        "cod_color": "AZ01",
+        "nombre_tejido": "Boston",
+        "color_general": "Azul",
+        "color_descripcion": "Azul marino",
+        "categoria": "Tejido plano",
+        "sub_categoria": "Estampado",
+        "composicion": "100% Algodon",
+        "ancho_cm": 150.0,
+        "gramaje_gm2": 180.0,
+        "precio_rollo": 13900,
+        "precio_media_rollo": None,
+        "precio_corte": 16680,
+        "unidad_medida": "metro",
+        "stock_rollos": 100,
     }
 
 
@@ -28,13 +29,13 @@ def test_crud_producto(client, auth_headers):
 
     resp = client.get(f"/api/productos/{producto_id}", headers=auth_headers)
     assert resp.status_code == 200
-    assert resp.get_json()["cod_sku"] == "TEL-001"
+    assert resp.get_json()["cod_producto"] == "TEL-001"
 
     resp = client.put(
-        f"/api/productos/{producto_id}", json={"precio": 27000}, headers=auth_headers
+        f"/api/productos/{producto_id}", json={"precio_rollo": 15000}, headers=auth_headers
     )
     assert resp.status_code == 200
-    assert resp.get_json()["precio"] == 27000
+    assert resp.get_json()["precio_rollo"] == 15000
 
     resp = client.delete(f"/api/productos/{producto_id}", headers=auth_headers)
     assert resp.status_code == 204
@@ -47,24 +48,24 @@ def test_duplicate_sku_rejected(client, auth_headers):
 
 
 def test_search_productos(client, auth_headers):
-    client.post("/api/productos", json=producto_payload(sku="TEL-100"), headers=auth_headers)
+    client.post("/api/productos", json=producto_payload(cod="TEL-100"), headers=auth_headers)
     client.post(
         "/api/productos",
-        json=producto_payload(sku="TEL-200") | {"nro_producto": 1002, "color": "Rojo"},
+        json=producto_payload(cod="TEL-200") | {"nombre_tejido": "Marrakesh Print"},
         headers=auth_headers,
     )
 
-    resp = client.get("/api/productos?q=Rojo", headers=auth_headers)
+    resp = client.get("/api/productos?q=Marrakesh", headers=auth_headers)
     data = resp.get_json()
     assert data["total"] == 1
-    assert data["items"][0]["cod_sku"] == "TEL-200"
+    assert data["items"][0]["cod_producto"] == "TEL-200"
 
 
-def test_import_productos_csv(client, auth_headers):
+def test_import_productos_csv_mapea_precios_karretel(client, auth_headers):
     csv_content = (
-        "cod_sku,descripcion,clase,categoria,precio,stock_actual\n"
-        "TEL-500,Lino natural,Lino,Tela,30000,20\n"
-        "TEL-500,Duplicado,Lino,Tela,30000,20\n"
+        "cod_producto,nombre_tejido,categoria,stock_rollos\n"
+        "TEL-500,Rayon Challis,Tejido plano,20\n"
+        "TEL-500,Rayon Challis,Tejido plano,20\n"
     )
     data = {"file": (io.BytesIO(csv_content.encode()), "productos.csv")}
     resp = client.post(
@@ -76,4 +77,9 @@ def test_import_productos_csv(client, auth_headers):
     assert resp.status_code == 200
     report = resp.get_json()
     assert report["insertados"] == 1
-    assert report["cantidad_errores"] == 1
+    assert report["actualizados"] == 1
+    assert report["cantidad_errores"] == 0
+
+    productos = client.get("/api/productos?q=TEL-500", headers=auth_headers).get_json()["items"]
+    assert productos[0]["precio_rollo"] == 11300
+    assert productos[0]["precio_corte"] == 13560

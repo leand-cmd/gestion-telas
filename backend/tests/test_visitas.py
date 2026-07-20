@@ -20,6 +20,30 @@ def visita_payload(cliente_id, asesor_id):
     }
 
 
+def test_crear_visita_sin_hora_permitido(client, auth_headers):
+    cliente_id, asesor_id = crear_cliente_y_asesor(client, auth_headers)
+    resp = client.post(
+        "/api/visitas",
+        json={"cliente_id": cliente_id, "asesor_id": asesor_id, "fecha": "2026-08-01"},
+        headers=auth_headers,
+    )
+    assert resp.status_code == 201
+    assert resp.get_json()["hora"] is None
+
+
+def test_eliminar_visita(client, auth_headers):
+    cliente_id, asesor_id = crear_cliente_y_asesor(client, auth_headers)
+    visita = client.post(
+        "/api/visitas", json=visita_payload(cliente_id, asesor_id), headers=auth_headers
+    ).get_json()
+
+    resp = client.delete(f"/api/visitas/{visita['id']}", headers=auth_headers)
+    assert resp.status_code == 204
+
+    resp2 = client.get(f"/api/visitas/{visita['id']}", headers=auth_headers)
+    assert resp2.status_code == 404
+
+
 def test_crear_y_registrar_resultado_visita(client, auth_headers):
     cliente_id, asesor_id = crear_cliente_y_asesor(client, auth_headers)
 
@@ -44,6 +68,47 @@ def test_crear_y_registrar_resultado_visita(client, auth_headers):
     assert data["estado"] == "realizada"
     assert data["resultado"] == "Interesado"
     assert data["tipo_gestion"] == "Venta Exitosa"
+
+
+def test_registrar_solo_tipo_gestion_sin_otros_campos(client, auth_headers):
+    cliente_id, asesor_id = crear_cliente_y_asesor(client, auth_headers)
+    visita = client.post(
+        "/api/visitas", json=visita_payload(cliente_id, asesor_id), headers=auth_headers
+    ).get_json()
+
+    resp = client.patch(
+        f"/api/visitas/{visita['id']}/resultado",
+        json={"tipo_gestion": "Sin Contacto"},
+        headers=auth_headers,
+    )
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data["estado"] == "realizada"
+    assert data["tipo_gestion"] == "Sin Contacto"
+    assert data["resultado"] is None
+    assert data["notas_visita"] is None
+
+
+def test_reeditar_tipo_gestion_no_pisa_notas_previas(client, auth_headers):
+    cliente_id, asesor_id = crear_cliente_y_asesor(client, auth_headers)
+    visita = client.post(
+        "/api/visitas", json=visita_payload(cliente_id, asesor_id), headers=auth_headers
+    ).get_json()
+
+    client.patch(
+        f"/api/visitas/{visita['id']}/resultado",
+        json={"tipo_gestion": "Sin Contacto", "notas_visita": "Primer intento"},
+        headers=auth_headers,
+    )
+    resp = client.patch(
+        f"/api/visitas/{visita['id']}/resultado",
+        json={"tipo_gestion": "Venta Exitosa"},
+        headers=auth_headers,
+    )
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data["tipo_gestion"] == "Venta Exitosa"
+    assert data["notas_visita"] == "Primer intento"
 
 
 def test_filtro_por_tipo_gestion(client, auth_headers):

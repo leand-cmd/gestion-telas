@@ -8,7 +8,7 @@ class VisitaSchema(Schema):
     cliente_id = fields.Integer(required=True)
     asesor_id = fields.Integer(required=True)
     fecha = fields.Date(required=True)
-    hora = fields.Time(required=True)
+    hora = fields.Time(allow_none=True, load_default=None)
     proposito = fields.String(allow_none=True, load_default=None, validate=validate.OneOf(PROPOSITOS))
     direccion = fields.String(allow_none=True, load_default=None)
     notas_previas = fields.String(allow_none=True, load_default=None)
@@ -35,13 +35,15 @@ class VisitaUpdateSchema(Schema):
 
 
 class VisitaResultadoSchema(Schema):
-    duracion_actual = fields.Integer(allow_none=True, load_default=None)
-    presente_cliente = fields.Boolean(allow_none=True, load_default=None)
-    productos_presentados = fields.String(allow_none=True, load_default=None)
-    resultado = fields.String(required=True, validate=validate.OneOf(RESULTADOS))
+    # Campos sin load_default: si no vienen en el request, quedan afuera del
+    # dict cargado y el endpoint no los toca (no pisa datos ya guardados).
+    duracion_actual = fields.Integer(allow_none=True)
+    presente_cliente = fields.Boolean(allow_none=True)
+    productos_presentados = fields.String(allow_none=True)
+    resultado = fields.String(allow_none=True, validate=validate.OneOf(RESULTADOS))
     tipo_gestion = fields.String(allow_none=True, load_default=None, validate=validate.OneOf(TIPOS_GESTION))
-    notas_visita = fields.String(allow_none=True, load_default=None)
-    proxima_accion = fields.String(allow_none=True, load_default=None)
+    notas_visita = fields.String(allow_none=True)
+    proxima_accion = fields.String(allow_none=True)
 
 
 visita_schema = VisitaSchema()

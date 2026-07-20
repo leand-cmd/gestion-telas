@@ -1,5 +1,7 @@
 import os
+from urllib.parse import urlparse
 
+import cloudinary
 from flask import Flask
 
 from app.config import CONFIG_BY_NAME
@@ -16,6 +18,18 @@ def create_app(config_name: str | None = None) -> Flask:
     migrate.init_app(app, db)
     jwt.init_app(app)
     cors.init_app(app, resources={r"/api/*": {"origins": app.config["CORS_ORIGINS"]}})
+
+    if app.config["CLOUDINARY_URL"]:
+        # cloudinary.config(cloudinary_url=...) no parsea nada (solo hace un
+        # update() literal); el SDK solo auto-lee CLOUDINARY_URL de os.environ
+        # una vez, al importarse el modulo. Para no depender de ese orden de
+        # import, parseamos la URL nosotros y pasamos los valores explicitos.
+        parsed = urlparse(app.config["CLOUDINARY_URL"])
+        cloudinary.config(
+            cloud_name=parsed.hostname,
+            api_key=parsed.username,
+            api_secret=parsed.password,
+        )
 
     from app.models import (  # noqa: F401
         Cliente,

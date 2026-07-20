@@ -47,7 +47,7 @@ def _build_detalles(detalles_data):
             raise ValueError(f"Producto {item['producto_id']} no existe")
         valor_unitario = item.get("valor_unitario")
         if valor_unitario is None:
-            valor_unitario = float(producto.precio or 0)
+            valor_unitario = float(producto.precio_rollo or 0)
         subtotal = valor_unitario * item["cantidad"]
         total += subtotal
         detalles.append(
