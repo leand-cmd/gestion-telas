@@ -69,6 +69,12 @@ def listar_productos():
     if activo is not None and activo != "":
         query = query.filter(Producto.activo == (activo.lower() == "true"))
 
+    coleccion_id = request.args.get("coleccion_id")
+    if coleccion_id == "none":
+        query = query.filter(Producto.coleccion_id.is_(None))
+    elif coleccion_id is not None and coleccion_id != "":
+        query = query.filter(Producto.coleccion_id == int(coleccion_id))
+
     query = query.order_by(Producto.cod_producto.asc())
 
     result = paginate(query)

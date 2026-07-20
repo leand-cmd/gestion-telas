@@ -1,9 +1,11 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
+from sqlalchemy import func
 
 from app.extensions import db
 from app.models.coleccion import Coleccion
+from app.models.producto import Producto
 from app.schemas.coleccion_schema import coleccion_schema, coleccion_update_schema
 from app.utils.cloudinary_upload import CloudinaryNotConfiguredError, upload_imagen
 from app.utils.pagination import paginate
@@ -18,13 +20,26 @@ ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 def listar_colecciones():
     query = Coleccion.query.order_by(Coleccion.nombre.asc())
     result = paginate(query, default_per_page=100)
+
+    conteos = dict(
+        db.session.query(Producto.coleccion_id, func.count(Producto.id))
+        .group_by(Producto.coleccion_id)
+        .all()
+    )
+    items = []
+    for c in result["items"]:
+        data = c.to_dict()
+        data["productos_count"] = conteos.get(c.id, 0)
+        items.append(data)
+
     return jsonify(
         {
-            "items": [c.to_dict() for c in result["items"]],
+            "items": items,
             "page": result["page"],
             "per_page": result["per_page"],
             "total": result["total"],
             "pages": result["pages"],
+            "sin_coleccion_count": conteos.get(None, 0),
         }
     )
 

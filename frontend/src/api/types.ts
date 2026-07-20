@@ -3,6 +3,7 @@ export interface Coleccion {
   nombre: string;
   descripcion: string | null;
   imagen_url: string | null;
+  productos_count?: number;
   created_at: string;
   updated_at: string;
 }

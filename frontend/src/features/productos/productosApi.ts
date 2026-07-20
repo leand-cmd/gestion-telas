@@ -5,6 +5,7 @@ export interface ProductoFilters {
   q?: string;
   categoria?: string;
   activo?: string;
+  coleccion_id?: number | "none";
   page?: number;
   per_page?: number;
 }

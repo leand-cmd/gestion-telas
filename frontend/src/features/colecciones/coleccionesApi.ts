@@ -1,8 +1,10 @@
 import { apiClient } from "../../api/client";
 import type { Coleccion, PaginatedResponse } from "../../api/types";
 
+export type ColeccionesResponse = PaginatedResponse<Coleccion> & { sin_coleccion_count: number };
+
 export async function fetchColecciones() {
-  const { data } = await apiClient.get<PaginatedResponse<Coleccion>>("/colecciones", {
+  const { data } = await apiClient.get<ColeccionesResponse>("/colecciones", {
     params: { per_page: 100 },
   });
   return data;

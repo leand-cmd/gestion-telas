@@ -6,7 +6,7 @@ import { Column, DataTable } from "../../components/DataTable";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { ImportModal } from "../../components/ImportModal";
 import { Pagination } from "../../components/Pagination";
-import type { Producto } from "../../api/types";
+import type { Coleccion, Producto } from "../../api/types";
 import { colors } from "../../theme/colors";
 import { fetchColecciones } from "../colecciones/coleccionesApi";
 import { ProductoForm } from "./ProductoForm";
@@ -19,14 +19,142 @@ import {
 
 const SIN_COLECCION = "Sin colección";
 
-function agruparPorColeccion(productos: Producto[]) {
-  const grupos = new Map<number | null, Producto[]>();
-  for (const p of productos) {
-    const clave = p.coleccion_id ?? null;
-    if (!grupos.has(clave)) grupos.set(clave, []);
-    grupos.get(clave)!.push(p);
-  }
-  return grupos;
+type ColeccionId = number | "none";
+type SubViewMode = "tabla" | "galeria";
+
+interface ProductosGaleriaProps {
+  columns: Column<Producto>[];
+  onCardClick: (p: Producto) => void;
+}
+
+function ProductosGaleria({ items, onCardClick }: { items: Producto[]; onCardClick: (p: Producto) => void }) {
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+        gap: 16,
+      }}
+    >
+      {items.map((p) => (
+        <div
+          key={p.id}
+          className="card"
+          style={{ padding: 16, cursor: "pointer" }}
+          onClick={() => onCardClick(p)}
+        >
+          <div
+            style={{
+              width: "100%",
+              height: 140,
+              borderRadius: 16,
+              background: p.url_imagen
+                ? `url(${p.url_imagen}) center/cover`
+                : colors.gradientBackground,
+              marginBottom: 12,
+            }}
+          />
+          <div style={{ fontWeight: 700, fontSize: 14 }}>{p.cod_producto}</div>
+          <div style={{ fontSize: 12, color: colors.grayNeutral, marginBottom: 6 }}>
+            {p.nombre_tejido}
+          </div>
+          <div style={{ fontSize: 12 }}>{p.color_general ?? "-"}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ColeccionExpandida({
+  coleccionId,
+  columns,
+  onCardClick,
+}: { coleccionId: ColeccionId } & ProductosGaleriaProps) {
+  const [page, setPage] = useState(1);
+  const [subView, setSubView] = useState<SubViewMode>("galeria");
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["productos-coleccion", coleccionId, page, subView],
+    queryFn: () =>
+      fetchProductos({ coleccion_id: coleccionId, page, per_page: subView === "galeria" ? 12 : 10 }),
+  });
+
+  return (
+    <div
+      className="card"
+      style={{ marginTop: 12, background: "rgba(108,93,209,0.04)" }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+        <button
+          className="btn btn-secondary"
+          onClick={() => setSubView(subView === "tabla" ? "galeria" : "tabla")}
+        >
+          {subView === "tabla" ? "Ver galería" : "Ver tabla"}
+        </button>
+      </div>
+
+      {subView === "tabla" ? (
+        <DataTable
+          columns={columns}
+          rows={data?.items ?? []}
+          rowKey={(p) => p.id}
+          loading={isLoading}
+          emptyMessage="Esta colección no tiene productos"
+        />
+      ) : isLoading ? (
+        <div style={{ padding: 24, textAlign: "center", color: colors.grayNeutral }}>
+          Cargando...
+        </div>
+      ) : (data?.items.length ?? 0) === 0 ? (
+        <div style={{ padding: 24, textAlign: "center", color: colors.grayNeutral }}>
+          Esta colección no tiene productos
+        </div>
+      ) : (
+        <ProductosGaleria items={data?.items ?? []} onCardClick={onCardClick} />
+      )}
+
+      {data && (
+        <Pagination page={data.page} pages={data.pages} total={data.total} onPageChange={setPage} />
+      )}
+    </div>
+  );
+}
+
+function ColeccionCard({
+  nombre,
+  imagenUrl,
+  count,
+  expanded,
+  onToggle,
+}: {
+  nombre: string;
+  imagenUrl: string | null;
+  count: number;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div
+      className="card"
+      style={{ padding: 16, cursor: "pointer", border: expanded ? `2px solid ${colors.purplePrimary}` : undefined }}
+      onClick={onToggle}
+    >
+      <div
+        style={{
+          width: "100%",
+          height: 160,
+          borderRadius: 16,
+          background: imagenUrl ? `url(${imagenUrl}) center/cover` : colors.gradientBackground,
+          marginBottom: 12,
+        }}
+      />
+      <div style={{ fontWeight: 700, fontSize: 15 }}>{nombre}</div>
+      <div style={{ fontSize: 12, color: colors.grayNeutral }}>
+        {count} {count === 1 ? "producto" : "productos"}
+      </div>
+    </div>
+  );
 }
 
 type ViewMode = "tabla" | "galeria";
@@ -35,6 +163,7 @@ export function ProductosList() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [view, setView] = useState<ViewMode>("tabla");
+  const [expandedId, setExpandedId] = useState<ColeccionId | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Producto | null>(null);
   const [deleting, setDeleting] = useState<Producto | null>(null);
@@ -44,7 +173,8 @@ export function ProductosList() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["productos", { page, q }],
-    queryFn: () => fetchProductos({ page, per_page: view === "galeria" ? 12 : 10, q }),
+    queryFn: () => fetchProductos({ page, per_page: 10, q }),
+    enabled: view === "tabla",
   });
 
   const { data: coleccionesData } = useQuery({
@@ -53,7 +183,16 @@ export function ProductosList() {
   });
   const coleccionPorId = new Map((coleccionesData?.items ?? []).map((c) => [c.id, c]));
 
-  const refetch = () => queryClient.invalidateQueries({ queryKey: ["productos"] });
+  const refetch = () => {
+    queryClient.invalidateQueries({ queryKey: ["productos"] });
+    queryClient.invalidateQueries({ queryKey: ["productos-coleccion"] });
+    queryClient.invalidateQueries({ queryKey: ["colecciones"] });
+  };
+
+  const abrirEditar = (p: Producto) => {
+    setEditing(p);
+    setFormOpen(true);
+  };
 
   const formatPrecio = (v: number | null) => (v != null ? `₲ ${v.toLocaleString("es-PY")}` : "-");
 
@@ -107,13 +246,7 @@ export function ProductosList() {
       header: "Acciones",
       render: (p) => (
         <div style={{ display: "flex", gap: 8 }}>
-          <button
-            className="btn btn-secondary"
-            onClick={() => {
-              setEditing(p);
-              setFormOpen(true);
-            }}
-          >
+          <button className="btn btn-secondary" onClick={() => abrirEditar(p)}>
             Editar
           </button>
           <button className="btn btn-danger" onClick={() => setDeleting(p)}>
@@ -122,6 +255,15 @@ export function ProductosList() {
         </div>
       ),
     },
+  ];
+
+  const tarjetas: { id: ColeccionId; coleccion: Coleccion | null; count: number }[] = [
+    ...(coleccionesData?.items ?? []).map((c) => ({
+      id: c.id as ColeccionId,
+      coleccion: c,
+      count: c.productos_count ?? 0,
+    })),
+    { id: "none" as ColeccionId, coleccion: null, count: coleccionesData?.sin_coleccion_count ?? 0 },
   ];
 
   return (
@@ -193,91 +335,28 @@ export function ProductosList() {
           )}
         </div>
       ) : (
-        <div>
-          {Array.from(agruparPorColeccion(data?.items ?? [])).map(([coleccionId, items]) => {
-            const coleccion = coleccionId != null ? coleccionPorId.get(coleccionId) : undefined;
-            const nombreColeccion = coleccion?.nombre ?? SIN_COLECCION;
-            const imagenColeccion = coleccion?.imagen_url ?? null;
-            return (
-              <div key={coleccionId ?? "sin-coleccion"} style={{ marginBottom: 24 }}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    marginBottom: 12,
-                    padding: "8px 12px",
-                    borderRadius: 16,
-                    background: imagenColeccion
-                      ? `linear-gradient(rgba(43,43,56,0.45), rgba(43,43,56,0.45)), url(${imagenColeccion}) center/cover`
-                      : "rgba(108,93,209,0.08)",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontWeight: 700,
-                      fontSize: 14,
-                      color: imagenColeccion ? colors.white : colors.purpleDark,
-                    }}
-                  >
-                    {nombreColeccion}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 12,
-                      color: imagenColeccion ? colors.white : colors.grayNeutral,
-                    }}
-                  >
-                    ({items.length})
-                  </span>
-                </div>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-                    gap: 16,
-                  }}
-                >
-                  {items.map((p) => (
-                    <div
-                      key={p.id}
-                      className="card"
-                      style={{ padding: 16, cursor: "pointer" }}
-                      onClick={() => {
-                        setEditing(p);
-                        setFormOpen(true);
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: "100%",
-                          height: 140,
-                          borderRadius: 16,
-                          background: p.url_imagen
-                            ? `url(${p.url_imagen}) center/cover`
-                            : colors.gradientBackground,
-                          marginBottom: 12,
-                        }}
-                      />
-                      <div style={{ fontWeight: 700, fontSize: 14 }}>{p.cod_producto}</div>
-                      <div style={{ fontSize: 12, color: colors.grayNeutral, marginBottom: 6 }}>
-                        {p.nombre_tejido}
-                      </div>
-                      <div style={{ fontSize: 12 }}>{p.color_general ?? "-"}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-          {data && (
-            <Pagination
-              page={data.page}
-              pages={data.pages}
-              total={data.total}
-              onPageChange={setPage}
-            />
-          )}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+            gap: 16,
+            alignItems: "start",
+          }}
+        >
+          {tarjetas.map(({ id, coleccion, count }) => (
+            <div key={id} style={{ gridColumn: expandedId === id ? "1 / -1" : undefined }}>
+              <ColeccionCard
+                nombre={coleccion?.nombre ?? SIN_COLECCION}
+                imagenUrl={coleccion?.imagen_url ?? null}
+                count={count}
+                expanded={expandedId === id}
+                onToggle={() => setExpandedId(expandedId === id ? null : id)}
+              />
+              {expandedId === id && (
+                <ColeccionExpandida coleccionId={id} columns={columns} onCardClick={abrirEditar} />
+              )}
+            </div>
+          ))}
         </div>
       )}
 
