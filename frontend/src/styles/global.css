@@ -231,10 +231,11 @@ tr:hover td {
 }
 
 .coleccion-card {
-  height: 220px;
+  height: 500px;
   display: flex;
   flex-direction: column;
   cursor: pointer;
+  overflow: hidden;
 }
 
 .coleccion-card-imagen {
@@ -242,11 +243,31 @@ tr:hover td {
   min-height: 0;
   border-radius: 16px;
   margin-bottom: 12px;
+  cursor: zoom-in;
 }
 
 .productos-expandidos {
   grid-column: 1 / -1;
   margin-top: 8px;
+}
+
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  cursor: zoom-out;
+  padding: 24px;
+}
+
+.lightbox-imagen {
+  max-width: 90%;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 12px;
 }
 
 .modal-overlay {
@@ -398,5 +419,13 @@ tr:hover td {
 
   td.td-truncate {
     max-width: 140px;
+  }
+
+  .coleccion-card {
+    height: 320px;
+  }
+
+  .lightbox-imagen {
+    max-width: 100%;
   }
 }

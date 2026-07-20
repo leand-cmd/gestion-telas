@@ -12,6 +12,7 @@ export function ColeccionesManager() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Coleccion | null>(null);
   const [deleting, setDeleting] = useState<Coleccion | null>(null);
+  const [imagenExpandida, setImagenExpandida] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -59,25 +60,17 @@ export function ColeccionesManager() {
           No hay colecciones creadas todavía.
         </div>
       ) : (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-            gap: 16,
-          }}
-        >
+        <div className="colecciones-grid">
           {data?.items.map((c) => (
-            <div key={c.id} className="card" style={{ padding: 16 }}>
+            <div key={c.id} className="card coleccion-card">
               <div
+                className="coleccion-card-imagen"
                 style={{
-                  width: "100%",
-                  height: 140,
-                  borderRadius: 16,
                   background: c.imagen_url
                     ? `url(${c.imagen_url}) center/cover`
                     : colors.gradientBackground,
-                  marginBottom: 12,
                 }}
+                onClick={() => c.imagen_url && setImagenExpandida(c.imagen_url)}
               />
               <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{c.nombre}</div>
               {c.descripcion && (
@@ -127,6 +120,12 @@ export function ColeccionesManager() {
             }
           }}
         />
+      )}
+
+      {imagenExpandida && (
+        <div className="lightbox-overlay" onClick={() => setImagenExpandida(null)}>
+          <img src={imagenExpandida} alt="Imagen completa" className="lightbox-imagen" />
+        </div>
       )}
     </div>
   );

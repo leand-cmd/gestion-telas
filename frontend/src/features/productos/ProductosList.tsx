@@ -127,6 +127,7 @@ function ColeccionCard({
   expanded,
   onToggle,
   onEdit,
+  onImagenClick,
 }: {
   nombre: string;
   imagenUrl: string | null;
@@ -134,6 +135,7 @@ function ColeccionCard({
   expanded: boolean;
   onToggle: () => void;
   onEdit: () => void;
+  onImagenClick: () => void;
 }) {
   return (
     <div
@@ -163,6 +165,11 @@ function ColeccionCard({
         style={{
           background: imagenUrl ? `url(${imagenUrl}) center/cover` : colors.gradientBackground,
         }}
+        onClick={(e) => {
+          if (!imagenUrl) return;
+          e.stopPropagation();
+          onImagenClick();
+        }}
       />
       <div style={{ fontWeight: 700, fontSize: 15 }}>{nombre}</div>
       <div style={{ fontSize: 12, color: colors.grayNeutral }}>
@@ -180,6 +187,7 @@ export function ProductosList() {
   const [view, setView] = useState<ViewMode>("tabla");
   const [expandedTejido, setExpandedTejido] = useState<string | null>(null);
   const [editingColeccionTejido, setEditingColeccionTejido] = useState<string | null>(null);
+  const [imagenExpandida, setImagenExpandida] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Producto | null>(null);
   const [deleting, setDeleting] = useState<Producto | null>(null);
@@ -353,19 +361,24 @@ export function ProductosList() {
         </div>
       ) : (
         <div className="colecciones-grid">
-          {(tejidosData ?? []).map(({ nombre_tejido, count }) => (
-            <ColeccionCard
-              key={nombre_tejido}
-              nombre={nombre_tejido}
-              imagenUrl={coleccionPorNombreTejido.get(nombre_tejido.trim().toLowerCase())?.imagen_url ?? null}
-              count={count}
-              expanded={expandedTejido === nombre_tejido}
-              onToggle={() =>
-                setExpandedTejido(expandedTejido === nombre_tejido ? null : nombre_tejido)
-              }
-              onEdit={() => setEditingColeccionTejido(nombre_tejido)}
-            />
-          ))}
+          {(tejidosData ?? []).map(({ nombre_tejido, count }) => {
+            const imagenUrl =
+              coleccionPorNombreTejido.get(nombre_tejido.trim().toLowerCase())?.imagen_url ?? null;
+            return (
+              <ColeccionCard
+                key={nombre_tejido}
+                nombre={nombre_tejido}
+                imagenUrl={imagenUrl}
+                count={count}
+                expanded={expandedTejido === nombre_tejido}
+                onToggle={() =>
+                  setExpandedTejido(expandedTejido === nombre_tejido ? null : nombre_tejido)
+                }
+                onEdit={() => setEditingColeccionTejido(nombre_tejido)}
+                onImagenClick={() => setImagenExpandida(imagenUrl)}
+              />
+            );
+          })}
           {expandedTejido && (
             <div className="productos-expandidos">
               <TejidoExpandido
@@ -428,6 +441,12 @@ export function ProductosList() {
             queryClient.invalidateQueries({ queryKey: ["colecciones"] });
           }}
         />
+      )}
+
+      {imagenExpandida && (
+        <div className="lightbox-overlay" onClick={() => setImagenExpandida(null)}>
+          <img src={imagenExpandida} alt="Imagen completa" className="lightbox-imagen" />
+        </div>
       )}
     </div>
   );
