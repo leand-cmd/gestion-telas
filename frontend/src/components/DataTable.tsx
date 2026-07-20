@@ -6,6 +6,7 @@ export interface Column<T> {
   header: string;
   render: (row: T) => ReactNode;
   truncate?: boolean;
+  minWidth?: number;
 }
 
 interface DataTableProps<T> {
@@ -45,7 +46,9 @@ export function DataTable<T>({
         <thead>
           <tr>
             {columns.map((col) => (
-              <th key={col.header}>{col.header}</th>
+              <th key={col.header} style={col.minWidth ? { minWidth: col.minWidth } : undefined}>
+                {col.header}
+              </th>
             ))}
           </tr>
         </thead>

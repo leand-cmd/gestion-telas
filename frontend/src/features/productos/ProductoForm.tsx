@@ -18,13 +18,17 @@ interface ProductoFormProps {
 
 const EMPTY: ProductoInput = {
   cod_producto: "",
+  marca: "",
+  coleccion: "",
   cod_color: "",
   nombre_tejido: "",
   color_general: "",
   color_descripcion: "",
   categoria: "",
   sub_categoria: "",
+  tipo_diseno: "",
   composicion: "",
+  linea_sugerida: "",
   ancho_cm: null,
   gramaje_gm2: null,
   precio_rollo: null,
@@ -34,6 +38,7 @@ const EMPTY: ProductoInput = {
   activo: true,
   url_imagen: null,
   descripcion: "",
+  fecha_creacion: null,
 };
 
 export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) {
@@ -111,6 +116,22 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
             />
           </div>
           <div>
+            <label htmlFor="marca">Marca</label>
+            <input
+              id="marca"
+              value={form.marca ?? ""}
+              onChange={(e) => setForm({ ...form, marca: e.target.value })}
+            />
+          </div>
+          <div>
+            <label htmlFor="coleccion">Colección</label>
+            <input
+              id="coleccion"
+              value={form.coleccion ?? ""}
+              onChange={(e) => setForm({ ...form, coleccion: e.target.value })}
+            />
+          </div>
+          <div>
             <label htmlFor="nombre_tejido">Nombre Tejido</label>
             <input
               id="nombre_tejido"
@@ -161,11 +182,27 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
             />
           </div>
           <div>
+            <label htmlFor="tipo_diseno">Tipo Diseño</label>
+            <input
+              id="tipo_diseno"
+              value={form.tipo_diseno ?? ""}
+              onChange={(e) => setForm({ ...form, tipo_diseno: e.target.value })}
+            />
+          </div>
+          <div>
             <label htmlFor="composicion">Composición</label>
             <input
               id="composicion"
               value={form.composicion ?? ""}
               onChange={(e) => setForm({ ...form, composicion: e.target.value })}
+            />
+          </div>
+          <div>
+            <label htmlFor="linea_sugerida">Línea Sugerida</label>
+            <input
+              id="linea_sugerida"
+              value={form.linea_sugerida ?? ""}
+              onChange={(e) => setForm({ ...form, linea_sugerida: e.target.value })}
             />
           </div>
           <div>
@@ -250,6 +287,15 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
               <option value="true">Activo</option>
               <option value="false">Inactivo</option>
             </select>
+          </div>
+          <div>
+            <label htmlFor="fecha_creacion">Fecha Creación</label>
+            <input
+              id="fecha_creacion"
+              type="date"
+              value={form.fecha_creacion ?? ""}
+              onChange={(e) => setForm({ ...form, fecha_creacion: e.target.value || null })}
+            />
           </div>
           <div>
             <label htmlFor="imagen">Seleccionar imagen</label>

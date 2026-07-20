@@ -32,13 +32,17 @@ export interface Cliente {
 export interface Producto {
   id: number;
   cod_producto: string;
+  marca: string | null;
+  coleccion: string | null;
   cod_color: string | null;
   nombre_tejido: string;
   color_general: string | null;
   color_descripcion: string | null;
   categoria: string;
   sub_categoria: string | null;
+  tipo_diseno: string | null;
   composicion: string | null;
+  linea_sugerida: string | null;
   ancho_cm: number | null;
   gramaje_gm2: number | null;
   precio_rollo: number | null;
@@ -48,6 +52,7 @@ export interface Producto {
   activo: boolean;
   url_imagen: string | null;
   descripcion: string | null;
+  fecha_creacion: string | null;
   created_at: string;
   updated_at: string;
 }

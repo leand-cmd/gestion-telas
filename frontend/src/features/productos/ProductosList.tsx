@@ -40,13 +40,42 @@ export function ProductosList() {
 
   const columns: Column<Producto>[] = [
     { header: "Cod Producto", render: (p) => p.cod_producto },
-    { header: "Nombre", render: (p) => p.nombre_tejido, truncate: true },
-    { header: "Color", render: (p) => p.color_general ?? "-" },
+    { header: "Marca", render: (p) => p.marca ?? "-" },
+    { header: "Colección", render: (p) => p.coleccion ?? "-", truncate: true, minWidth: 140 },
+    { header: "Nombre Tejido", render: (p) => p.nombre_tejido, truncate: true, minWidth: 160 },
+    { header: "Cod Color", render: (p) => p.cod_color ?? "-" },
+    {
+      header: "Color Inferido",
+      render: (p) => p.color_descripcion ?? "-",
+      truncate: true,
+      minWidth: 160,
+    },
+    { header: "Color General", render: (p) => p.color_general ?? "-" },
+    { header: "Categoría", render: (p) => p.categoria, truncate: true, minWidth: 140 },
+    { header: "Sub Categoría", render: (p) => p.sub_categoria ?? "-", truncate: true, minWidth: 140 },
+    { header: "Tipo Diseño", render: (p) => p.tipo_diseno ?? "-" },
+    { header: "Composicion", render: (p) => p.composicion ?? "-", truncate: true, minWidth: 160 },
+    {
+      header: "Línea Sugerida",
+      render: (p) => p.linea_sugerida ?? "-",
+      truncate: true,
+      minWidth: 160,
+    },
     { header: "Rollo", render: (p) => formatPrecio(p.precio_rollo) },
     { header: "1/2 Rollo", render: (p) => formatPrecio(p.precio_media_rollo) },
     { header: "Corte", render: (p) => formatPrecio(p.precio_corte) },
     { header: "Ancho", render: (p) => (p.ancho_cm != null ? `${p.ancho_cm} cm` : "-") },
     { header: "Gramaje", render: (p) => (p.gramaje_gm2 != null ? `${p.gramaje_gm2} g/m²` : "-") },
+    { header: "Stock", render: (p) => p.stock_rollos ?? 0 },
+    {
+      header: "Activo",
+      render: (p) => (
+        <span className={`badge ${p.activo ? "badge-active" : "badge-inactive"}`}>
+          {p.activo ? "Activo" : "Inactivo"}
+        </span>
+      ),
+    },
+    { header: "Fecha Creación", render: (p) => p.fecha_creacion ?? "-" },
     {
       header: "Acciones",
       render: (p) => (
