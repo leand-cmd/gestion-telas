@@ -18,7 +18,6 @@ interface ProductoFormProps {
 
 const EMPTY: ProductoInput = {
   cod_producto: "",
-  cod_categoria: "",
   cod_color: "",
   nombre_tejido: "",
   color_general: "",
@@ -31,7 +30,6 @@ const EMPTY: ProductoInput = {
   precio_rollo: null,
   precio_media_rollo: null,
   precio_corte: null,
-  unidad_medida: "metro",
   stock_rollos: 0,
   activo: true,
   url_imagen: null,
@@ -39,9 +37,14 @@ const EMPTY: ProductoInput = {
 };
 
 export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) {
-  const [form, setForm] = useState<ProductoInput>(
-    producto ? { ...EMPTY, ...producto } : EMPTY
-  );
+  const [form, setForm] = useState<ProductoInput>(() => {
+    if (!producto) return EMPTY;
+    // id/created_at/updated_at son dump_only en el backend: si se
+    // reenvian en el body de create/update, el schema los rechaza como
+    // "Unknown field".
+    const { id, created_at, updated_at, ...rest } = producto;
+    return { ...EMPTY, ...rest };
+  });
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -108,14 +111,6 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
             />
           </div>
           <div>
-            <label htmlFor="cod_categoria">Cod Categoría</label>
-            <input
-              id="cod_categoria"
-              value={form.cod_categoria ?? ""}
-              onChange={(e) => setForm({ ...form, cod_categoria: e.target.value })}
-            />
-          </div>
-          <div>
             <label htmlFor="nombre_tejido">Nombre Tejido</label>
             <input
               id="nombre_tejido"
@@ -171,14 +166,6 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
               id="composicion"
               value={form.composicion ?? ""}
               onChange={(e) => setForm({ ...form, composicion: e.target.value })}
-            />
-          </div>
-          <div>
-            <label htmlFor="unidad_medida">Unidad de Medida</label>
-            <input
-              id="unidad_medida"
-              value={form.unidad_medida ?? ""}
-              onChange={(e) => setForm({ ...form, unidad_medida: e.target.value })}
             />
           </div>
           <div>

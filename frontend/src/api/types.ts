@@ -32,7 +32,6 @@ export interface Cliente {
 export interface Producto {
   id: number;
   cod_producto: string;
-  cod_categoria: string | null;
   cod_color: string | null;
   nombre_tejido: string;
   color_general: string | null;
@@ -45,7 +44,6 @@ export interface Producto {
   precio_rollo: number | null;
   precio_media_rollo: number | null;
   precio_corte: number | null;
-  unidad_medida: string | null;
   stock_rollos: number | null;
   activo: boolean;
   url_imagen: string | null;
