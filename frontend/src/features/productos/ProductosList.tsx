@@ -6,8 +6,9 @@ import { Column, DataTable } from "../../components/DataTable";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { ImportModal } from "../../components/ImportModal";
 import { Pagination } from "../../components/Pagination";
-import type { Producto } from "../../api/types";
+import type { Coleccion, Producto } from "../../api/types";
 import { colors } from "../../theme/colors";
+import { ColeccionForm } from "../colecciones/ColeccionForm";
 import { fetchColecciones } from "../colecciones/coleccionesApi";
 import { ProductoForm } from "./ProductoForm";
 import {
@@ -125,19 +126,38 @@ function ColeccionCard({
   count,
   expanded,
   onToggle,
+  onEdit,
 }: {
   nombre: string;
   imagenUrl: string | null;
   count: number;
   expanded: boolean;
   onToggle: () => void;
+  onEdit: () => void;
 }) {
   return (
     <div
       className="card coleccion-card"
-      style={{ border: expanded ? `2px solid ${colors.purplePrimary}` : undefined }}
+      style={{ border: expanded ? `2px solid ${colors.purplePrimary}` : undefined, position: "relative" }}
       onClick={onToggle}
     >
+      <button
+        className="btn btn-secondary"
+        style={{
+          position: "absolute",
+          top: 10,
+          right: 10,
+          padding: "4px 10px",
+          fontSize: 12,
+          zIndex: 1,
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onEdit();
+        }}
+      >
+        ✎ Editar
+      </button>
       <div
         className="coleccion-card-imagen"
         style={{
@@ -159,6 +179,7 @@ export function ProductosList() {
   const [q, setQ] = useState("");
   const [view, setView] = useState<ViewMode>("tabla");
   const [expandedTejido, setExpandedTejido] = useState<string | null>(null);
+  const [editingColeccionTejido, setEditingColeccionTejido] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Producto | null>(null);
   const [deleting, setDeleting] = useState<Producto | null>(null);
@@ -183,8 +204,8 @@ export function ProductosList() {
     queryFn: fetchColecciones,
   });
   const coleccionPorId = new Map((coleccionesData?.items ?? []).map((c) => [c.id, c]));
-  const imagenPorNombreTejido = new Map(
-    (coleccionesData?.items ?? []).map((c) => [c.nombre.trim().toLowerCase(), c.imagen_url])
+  const coleccionPorNombreTejido = new Map<string, Coleccion>(
+    (coleccionesData?.items ?? []).map((c) => [c.nombre.trim().toLowerCase(), c])
   );
 
   const refetch = () => {
@@ -336,12 +357,13 @@ export function ProductosList() {
             <ColeccionCard
               key={nombre_tejido}
               nombre={nombre_tejido}
-              imagenUrl={imagenPorNombreTejido.get(nombre_tejido.trim().toLowerCase()) ?? null}
+              imagenUrl={coleccionPorNombreTejido.get(nombre_tejido.trim().toLowerCase())?.imagen_url ?? null}
               count={count}
               expanded={expandedTejido === nombre_tejido}
               onToggle={() =>
                 setExpandedTejido(expandedTejido === nombre_tejido ? null : nombre_tejido)
               }
+              onEdit={() => setEditingColeccionTejido(nombre_tejido)}
             />
           ))}
           {expandedTejido && (
@@ -393,6 +415,18 @@ export function ProductosList() {
           onImport={importProductos}
           onClose={() => setImportOpen(false)}
           onImported={refetch}
+        />
+      )}
+
+      {editingColeccionTejido && (
+        <ColeccionForm
+          coleccion={coleccionPorNombreTejido.get(editingColeccionTejido.trim().toLowerCase()) ?? null}
+          nombreFijo={editingColeccionTejido}
+          onClose={() => setEditingColeccionTejido(null)}
+          onSaved={() => {
+            setEditingColeccionTejido(null);
+            queryClient.invalidateQueries({ queryKey: ["colecciones"] });
+          }}
         />
       )}
     </div>

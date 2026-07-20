@@ -1,34 +1,17 @@
-import { DragEvent, FormEvent, useRef, useState } from "react";
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import type { Coleccion } from "../../api/types";
 import { colors } from "../../theme/colors";
-import {
-  createColeccion,
-  deleteColeccion,
-  fetchColecciones,
-  updateColeccion,
-  uploadImagenColeccion,
-  type ColeccionInput,
-} from "./coleccionesApi";
-
-const EMPTY: ColeccionInput = {
-  nombre: "",
-  descripcion: "",
-  imagen_url: null,
-};
+import { ColeccionForm } from "./ColeccionForm";
+import { deleteColeccion, fetchColecciones } from "./coleccionesApi";
 
 export function ColeccionesManager() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Coleccion | null>(null);
   const [deleting, setDeleting] = useState<Coleccion | null>(null);
-  const [form, setForm] = useState<ColeccionInput>(EMPTY);
-  const [uploading, setUploading] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const queryClient = useQueryClient();
 
@@ -41,58 +24,12 @@ export function ColeccionesManager() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm(EMPTY);
     setFormOpen(true);
   };
 
   const openEdit = (c: Coleccion) => {
     setEditing(c);
-    setForm({ nombre: c.nombre, descripcion: c.descripcion, imagen_url: c.imagen_url });
     setFormOpen(true);
-  };
-
-  const handleFile = async (file: File | null) => {
-    if (!file) return;
-    setUploading(true);
-    try {
-      const url = await uploadImagenColeccion(file);
-      setForm((prev) => ({ ...prev, imagen_url: url }));
-      toast.success("Imagen subida");
-    } catch (err: any) {
-      toast.error(err?.response?.data?.error || "No se pudo subir la imagen");
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setDragOver(false);
-    handleFile(e.dataTransfer.files?.[0] ?? null);
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!form.nombre.trim()) {
-      toast.error("El nombre es obligatorio");
-      return;
-    }
-    setSaving(true);
-    try {
-      if (editing) {
-        await updateColeccion(editing.id, form);
-        toast.success("Colección actualizada");
-      } else {
-        await createColeccion(form);
-        toast.success("Colección creada");
-      }
-      setFormOpen(false);
-      refetch();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.error || "No se pudo guardar la colección");
-    } finally {
-      setSaving(false);
-    }
   };
 
   return (
@@ -150,7 +87,7 @@ export function ColeccionesManager() {
               )}
               <div style={{ display: "flex", gap: 8 }}>
                 <button className="btn btn-secondary" onClick={() => openEdit(c)}>
-                  Editar
+                  ✎ Editar
                 </button>
                 <button className="btn btn-danger" onClick={() => setDeleting(c)}>
                   Eliminar
@@ -162,81 +99,14 @@ export function ColeccionesManager() {
       )}
 
       {formOpen && (
-        <div className="modal-overlay">
-          <form onSubmit={handleSubmit} className="card modal-card" style={{ maxWidth: 460 }}>
-            <h3 style={{ margin: 0, color: colors.purpleDark }}>
-              {editing ? "Editar colección" : "Nueva colección"}
-            </h3>
-
-            <div>
-              <label htmlFor="nombre">Nombre</label>
-              <input
-                id="nombre"
-                value={form.nombre}
-                onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="descripcion">Descripción</label>
-              <textarea
-                id="descripcion"
-                rows={3}
-                value={form.descripcion ?? ""}
-                onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
-              />
-            </div>
-
-            <div>
-              <label>Imagen</label>
-              <div
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setDragOver(true);
-                }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-                style={{
-                  border: `2px dashed ${dragOver ? colors.purplePrimary : "#e3e1f0"}`,
-                  borderRadius: 16,
-                  padding: 16,
-                  textAlign: "center",
-                  cursor: "pointer",
-                  background: dragOver ? "rgba(108,93,209,0.06)" : "transparent",
-                }}
-              >
-                {form.imagen_url ? (
-                  <img
-                    src={form.imagen_url}
-                    alt="Vista previa"
-                    style={{ height: 90, borderRadius: 10, objectFit: "cover" }}
-                  />
-                ) : (
-                  <div style={{ fontSize: 13, color: colors.grayNeutral, padding: "12px 0" }}>
-                    {uploading ? "Subiendo..." : "Arrastrá una imagen aquí o hacé clic para elegir"}
-                  </div>
-                )}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  style={{ display: "none" }}
-                  onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
-                />
-              </div>
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
-              <button type="button" className="btn btn-secondary" onClick={() => setFormOpen(false)}>
-                Cancelar
-              </button>
-              <button type="submit" className="btn btn-primary" disabled={saving || uploading}>
-                {saving ? "Guardando..." : "Guardar"}
-              </button>
-            </div>
-          </form>
-        </div>
+        <ColeccionForm
+          coleccion={editing}
+          onClose={() => setFormOpen(false)}
+          onSaved={() => {
+            setFormOpen(false);
+            refetch();
+          }}
+        />
       )}
 
       {deleting && (
