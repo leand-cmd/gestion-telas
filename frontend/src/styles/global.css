@@ -223,6 +223,32 @@ tr:hover td {
   overflow-x: auto;
 }
 
+.colecciones-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.coleccion-card {
+  height: 220px;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.coleccion-card-imagen {
+  flex: 1;
+  min-height: 0;
+  border-radius: 16px;
+  margin-bottom: 12px;
+}
+
+.productos-expandidos {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+}
+
 .modal-overlay {
   position: fixed;
   inset: 0;

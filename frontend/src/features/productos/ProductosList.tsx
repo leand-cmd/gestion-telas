@@ -134,17 +134,14 @@ function ColeccionCard({
 }) {
   return (
     <div
-      className="card"
-      style={{ padding: 16, cursor: "pointer", border: expanded ? `2px solid ${colors.purplePrimary}` : undefined }}
+      className="card coleccion-card"
+      style={{ border: expanded ? `2px solid ${colors.purplePrimary}` : undefined }}
       onClick={onToggle}
     >
       <div
+        className="coleccion-card-imagen"
         style={{
-          width: "100%",
-          height: 160,
-          borderRadius: 16,
           background: imagenUrl ? `url(${imagenUrl}) center/cover` : colors.gradientBackground,
-          marginBottom: 12,
         }}
       />
       <div style={{ fontWeight: 700, fontSize: 15 }}>{nombre}</div>
@@ -334,37 +331,28 @@ export function ProductosList() {
           )}
         </div>
       ) : (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-            gap: 16,
-            alignItems: "start",
-          }}
-        >
+        <div className="colecciones-grid">
           {(tejidosData ?? []).map(({ nombre_tejido, count }) => (
-            <div
+            <ColeccionCard
               key={nombre_tejido}
-              style={{ gridColumn: expandedTejido === nombre_tejido ? "1 / -1" : undefined }}
-            >
-              <ColeccionCard
-                nombre={nombre_tejido}
-                imagenUrl={imagenPorNombreTejido.get(nombre_tejido.trim().toLowerCase()) ?? null}
-                count={count}
-                expanded={expandedTejido === nombre_tejido}
-                onToggle={() =>
-                  setExpandedTejido(expandedTejido === nombre_tejido ? null : nombre_tejido)
-                }
-              />
-              {expandedTejido === nombre_tejido && (
-                <TejidoExpandido
-                  nombreTejido={nombre_tejido}
-                  columns={columns}
-                  onCardClick={abrirEditar}
-                />
-              )}
-            </div>
+              nombre={nombre_tejido}
+              imagenUrl={imagenPorNombreTejido.get(nombre_tejido.trim().toLowerCase()) ?? null}
+              count={count}
+              expanded={expandedTejido === nombre_tejido}
+              onToggle={() =>
+                setExpandedTejido(expandedTejido === nombre_tejido ? null : nombre_tejido)
+              }
+            />
           ))}
+          {expandedTejido && (
+            <div className="productos-expandidos">
+              <TejidoExpandido
+                nombreTejido={expandedTejido}
+                columns={columns}
+                onCardClick={abrirEditar}
+              />
+            </div>
+          )}
         </div>
       )}
 
