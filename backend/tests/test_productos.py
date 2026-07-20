@@ -66,6 +66,27 @@ def test_search_productos(client, auth_headers):
     assert data["items"][0]["cod_producto"] == "TEL-200"
 
 
+def test_asignar_coleccion_a_producto(client, auth_headers):
+    coleccion_id = client.post(
+        "/api/colecciones", json={"nombre": "TUL Frances"}, headers=auth_headers
+    ).get_json()["id"]
+
+    resp = client.post(
+        "/api/productos",
+        json=producto_payload(cod="TEL-300") | {"coleccion_id": coleccion_id},
+        headers=auth_headers,
+    )
+    assert resp.status_code == 201
+    assert resp.get_json()["coleccion_id"] == coleccion_id
+
+    resp_inexistente = client.post(
+        "/api/productos",
+        json=producto_payload(cod="TEL-301") | {"coleccion_id": 9999},
+        headers=auth_headers,
+    )
+    assert resp_inexistente.status_code == 400
+
+
 def test_import_productos_csv_mapea_precios_karretel(client, auth_headers):
     csv_content = (
         "cod_producto,nombre_tejido,categoria,stock_rollos\n"

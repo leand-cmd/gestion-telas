@@ -7,6 +7,7 @@ class ProductoSchema(Schema):
     proveedor = fields.String(allow_none=True, load_default=None)
     marca = fields.String(allow_none=True, load_default=None)
     coleccion = fields.String(allow_none=True, load_default=None)
+    coleccion_id = fields.Integer(allow_none=True, load_default=None)
     nombre_tejido = fields.String(required=True, validate=validate.Length(min=1, max=100))
     cod_color = fields.String(allow_none=True, load_default=None)
     color_general = fields.String(allow_none=True, load_default=None)

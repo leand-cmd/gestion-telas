@@ -7,6 +7,7 @@ from marshmallow import ValidationError
 from sqlalchemy import or_
 
 from app.extensions import db
+from app.models.coleccion import Coleccion
 from app.models.producto import Producto
 from app.schemas.producto_schema import producto_schema, producto_update_schema
 from app.utils.cloudinary_upload import CloudinaryNotConfiguredError, upload_imagen
@@ -93,6 +94,9 @@ def crear_producto():
     if Producto.query.filter_by(cod_producto=data["cod_producto"]).first():
         return jsonify({"error": "Ya existe un producto con ese Cod Producto"}), 409
 
+    if data.get("coleccion_id") is not None and not db.session.get(Coleccion, data["coleccion_id"]):
+        return jsonify({"error": "La colección indicada no existe"}), 400
+
     producto = Producto(**data)
     db.session.add(producto)
     db.session.commit()
@@ -118,6 +122,9 @@ def actualizar_producto(producto_id):
     if "cod_producto" in data and data["cod_producto"] != producto.cod_producto:
         if Producto.query.filter_by(cod_producto=data["cod_producto"]).first():
             return jsonify({"error": "Ya existe un producto con ese Cod Producto"}), 409
+
+    if data.get("coleccion_id") is not None and not db.session.get(Coleccion, data["coleccion_id"]):
+        return jsonify({"error": "La colección indicada no existe"}), 400
 
     for key, value in data.items():
         setattr(producto, key, value)

@@ -43,6 +43,7 @@ export interface Producto {
   cod_producto: string;
   marca: string | null;
   coleccion: string | null;
+  coleccion_id: number | null;
   cod_color: string | null;
   nombre_tejido: string;
   color_general: string | null;

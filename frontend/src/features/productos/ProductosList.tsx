@@ -20,9 +20,9 @@ import {
 const SIN_COLECCION = "Sin colección";
 
 function agruparPorColeccion(productos: Producto[]) {
-  const grupos = new Map<string, Producto[]>();
+  const grupos = new Map<number | null, Producto[]>();
   for (const p of productos) {
-    const clave = p.coleccion?.trim() || SIN_COLECCION;
+    const clave = p.coleccion_id ?? null;
     if (!grupos.has(clave)) grupos.set(clave, []);
     grupos.get(clave)!.push(p);
   }
@@ -50,11 +50,8 @@ export function ProductosList() {
   const { data: coleccionesData } = useQuery({
     queryKey: ["colecciones"],
     queryFn: fetchColecciones,
-    enabled: view === "galeria",
   });
-  const imagenPorColeccion = new Map(
-    (coleccionesData?.items ?? []).map((c) => [c.nombre.trim().toLowerCase(), c.imagen_url])
-  );
+  const coleccionPorId = new Map((coleccionesData?.items ?? []).map((c) => [c.id, c]));
 
   const refetch = () => queryClient.invalidateQueries({ queryKey: ["productos"] });
 
@@ -63,7 +60,15 @@ export function ProductosList() {
   const columns: Column<Producto>[] = [
     { header: "Cod Producto", render: (p) => p.cod_producto },
     { header: "Marca", render: (p) => p.marca ?? "-" },
-    { header: "Colección", render: (p) => p.coleccion ?? "-", truncate: true, minWidth: 140 },
+    {
+      header: "Colección",
+      render: (p) =>
+        (p.coleccion_id != null ? coleccionPorId.get(p.coleccion_id)?.nombre : null) ??
+        p.coleccion ??
+        "-",
+      truncate: true,
+      minWidth: 140,
+    },
     { header: "Nombre Tejido", render: (p) => p.nombre_tejido, truncate: true, minWidth: 160 },
     { header: "Cod Color", render: (p) => p.cod_color ?? "-" },
     {
@@ -189,10 +194,12 @@ export function ProductosList() {
         </div>
       ) : (
         <div>
-          {Array.from(agruparPorColeccion(data?.items ?? [])).map(([nombreColeccion, items]) => {
-            const imagenColeccion = imagenPorColeccion.get(nombreColeccion.trim().toLowerCase());
+          {Array.from(agruparPorColeccion(data?.items ?? [])).map(([coleccionId, items]) => {
+            const coleccion = coleccionId != null ? coleccionPorId.get(coleccionId) : undefined;
+            const nombreColeccion = coleccion?.nombre ?? SIN_COLECCION;
+            const imagenColeccion = coleccion?.imagen_url ?? null;
             return (
-              <div key={nombreColeccion} style={{ marginBottom: 24 }}>
+              <div key={coleccionId ?? "sin-coleccion"} style={{ marginBottom: 24 }}>
                 <div
                   style={{
                     display: "flex",

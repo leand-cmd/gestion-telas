@@ -11,6 +11,7 @@ class Producto(db.Model):
     proveedor = db.Column(db.String(50))
     marca = db.Column(db.String(50))
     coleccion = db.Column(db.String(100))
+    coleccion_id = db.Column(db.Integer, db.ForeignKey("colecciones.id"), nullable=True, index=True)
     nombre_tejido = db.Column(db.String(100), nullable=False, index=True)
     cod_color = db.Column(db.String(20))
     color_general = db.Column(db.String(50))
@@ -40,6 +41,7 @@ class Producto(db.Model):
 
     detalles_pedido = db.relationship("PedidoDetalle", back_populates="producto")
     movimientos_stock = db.relationship("StockMovimiento", back_populates="producto")
+    coleccion_ref = db.relationship("Coleccion")
 
     def to_dict(self) -> dict:
         return {
@@ -48,6 +50,7 @@ class Producto(db.Model):
             "proveedor": self.proveedor,
             "marca": self.marca,
             "coleccion": self.coleccion,
+            "coleccion_id": self.coleccion_id,
             "nombre_tejido": self.nombre_tejido,
             "cod_color": self.cod_color,
             "color_general": self.color_general,
