@@ -6,6 +6,7 @@ import { AuthProvider } from "./auth/AuthContext";
 import { LoginPage } from "./auth/LoginPage";
 import { ProtectedRoute } from "./auth/ProtectedRoute";
 import { Layout } from "./components/Layout";
+import { ColeccionesManager } from "./features/colecciones/ColeccionesManager";
 import { DashboardPage } from "./features/dashboard/DashboardPage";
 import { ClientesList } from "./features/clientes/ClientesList";
 import { GestionesPage } from "./features/gestiones/GestionesPage";
@@ -37,6 +38,7 @@ export function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/clientes" element={<ClientesList />} />
             <Route path="/productos" element={<ProductosList />} />
+            <Route path="/colecciones" element={<ColeccionesManager />} />
             <Route path="/pedidos" element={<PedidosList />} />
             <Route path="/ventas" element={<VentasList />} />
             <Route path="/stock" element={<StockList />} />

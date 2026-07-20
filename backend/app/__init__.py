@@ -33,6 +33,7 @@ def create_app(config_name: str | None = None) -> Flask:
 
     from app.models import (  # noqa: F401
         Cliente,
+        Coleccion,
         Pedido,
         PedidoDetalle,
         Producto,
@@ -45,6 +46,7 @@ def create_app(config_name: str | None = None) -> Flask:
 
     from app.api.auth import auth_bp
     from app.api.clientes import clientes_bp
+    from app.api.colecciones import colecciones_bp
     from app.api.dashboard import dashboard_bp
     from app.api.pedidos import pedidos_bp
     from app.api.productos import productos_bp
@@ -56,6 +58,7 @@ def create_app(config_name: str | None = None) -> Flask:
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(clientes_bp, url_prefix="/api/clientes")
     app.register_blueprint(productos_bp, url_prefix="/api/productos")
+    app.register_blueprint(colecciones_bp, url_prefix="/api/colecciones")
     app.register_blueprint(pedidos_bp, url_prefix="/api/pedidos")
     app.register_blueprint(ventas_bp, url_prefix="/api/ventas")
     app.register_blueprint(stock_bp, url_prefix="/api/stock")

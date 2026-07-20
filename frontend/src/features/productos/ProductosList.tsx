@@ -8,6 +8,7 @@ import { ImportModal } from "../../components/ImportModal";
 import { Pagination } from "../../components/Pagination";
 import type { Producto } from "../../api/types";
 import { colors } from "../../theme/colors";
+import { fetchColecciones } from "../colecciones/coleccionesApi";
 import { ProductoForm } from "./ProductoForm";
 import {
   deleteProducto,
@@ -15,6 +16,18 @@ import {
   fetchProductos,
   importProductos,
 } from "./productosApi";
+
+const SIN_COLECCION = "Sin colección";
+
+function agruparPorColeccion(productos: Producto[]) {
+  const grupos = new Map<string, Producto[]>();
+  for (const p of productos) {
+    const clave = p.coleccion?.trim() || SIN_COLECCION;
+    if (!grupos.has(clave)) grupos.set(clave, []);
+    grupos.get(clave)!.push(p);
+  }
+  return grupos;
+}
 
 type ViewMode = "tabla" | "galeria";
 
@@ -33,6 +46,15 @@ export function ProductosList() {
     queryKey: ["productos", { page, q }],
     queryFn: () => fetchProductos({ page, per_page: view === "galeria" ? 12 : 10, q }),
   });
+
+  const { data: coleccionesData } = useQuery({
+    queryKey: ["colecciones"],
+    queryFn: fetchColecciones,
+    enabled: view === "galeria",
+  });
+  const imagenPorColeccion = new Map(
+    (coleccionesData?.items ?? []).map((c) => [c.nombre.trim().toLowerCase(), c.imagen_url])
+  );
 
   const refetch = () => queryClient.invalidateQueries({ queryKey: ["productos"] });
 
@@ -167,42 +189,80 @@ export function ProductosList() {
         </div>
       ) : (
         <div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-              gap: 16,
-            }}
-          >
-            {(data?.items ?? []).map((p) => (
-              <div
-                key={p.id}
-                className="card"
-                style={{ padding: 16, cursor: "pointer" }}
-                onClick={() => {
-                  setEditing(p);
-                  setFormOpen(true);
-                }}
-              >
+          {Array.from(agruparPorColeccion(data?.items ?? [])).map(([nombreColeccion, items]) => {
+            const imagenColeccion = imagenPorColeccion.get(nombreColeccion.trim().toLowerCase());
+            return (
+              <div key={nombreColeccion} style={{ marginBottom: 24 }}>
                 <div
                   style={{
-                    width: "100%",
-                    height: 140,
-                    borderRadius: 16,
-                    background: p.url_imagen
-                      ? `url(${p.url_imagen}) center/cover`
-                      : colors.gradientBackground,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
                     marginBottom: 12,
+                    padding: "8px 12px",
+                    borderRadius: 16,
+                    background: imagenColeccion
+                      ? `linear-gradient(rgba(43,43,56,0.45), rgba(43,43,56,0.45)), url(${imagenColeccion}) center/cover`
+                      : "rgba(108,93,209,0.08)",
                   }}
-                />
-                <div style={{ fontWeight: 700, fontSize: 14 }}>{p.cod_producto}</div>
-                <div style={{ fontSize: 12, color: colors.grayNeutral, marginBottom: 6 }}>
-                  {p.nombre_tejido}
+                >
+                  <span
+                    style={{
+                      fontWeight: 700,
+                      fontSize: 14,
+                      color: imagenColeccion ? colors.white : colors.purpleDark,
+                    }}
+                  >
+                    {nombreColeccion}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 12,
+                      color: imagenColeccion ? colors.white : colors.grayNeutral,
+                    }}
+                  >
+                    ({items.length})
+                  </span>
                 </div>
-                <div style={{ fontSize: 12 }}>{p.color_general ?? "-"}</div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+                    gap: 16,
+                  }}
+                >
+                  {items.map((p) => (
+                    <div
+                      key={p.id}
+                      className="card"
+                      style={{ padding: 16, cursor: "pointer" }}
+                      onClick={() => {
+                        setEditing(p);
+                        setFormOpen(true);
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: "100%",
+                          height: 140,
+                          borderRadius: 16,
+                          background: p.url_imagen
+                            ? `url(${p.url_imagen}) center/cover`
+                            : colors.gradientBackground,
+                          marginBottom: 12,
+                        }}
+                      />
+                      <div style={{ fontWeight: 700, fontSize: 14 }}>{p.cod_producto}</div>
+                      <div style={{ fontSize: 12, color: colors.grayNeutral, marginBottom: 6 }}>
+                        {p.nombre_tejido}
+                      </div>
+                      <div style={{ fontSize: 12 }}>{p.color_general ?? "-"}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
           {data && (
             <Pagination
               page={data.page}

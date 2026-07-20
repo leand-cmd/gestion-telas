@@ -13,6 +13,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", path: "/dashboard" },
   { label: "Clientes", path: "/clientes" },
   { label: "Productos", path: "/productos" },
+  { label: "Colecciones", path: "/colecciones" },
   { label: "Pedidos", path: "/pedidos" },
   { label: "Ventas", path: "/ventas" },
   { label: "Stock", path: "/stock" },
