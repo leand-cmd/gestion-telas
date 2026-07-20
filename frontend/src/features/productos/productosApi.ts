@@ -6,6 +6,7 @@ export interface ProductoFilters {
   categoria?: string;
   activo?: string;
   coleccion_id?: number | "none";
+  nombre_tejido?: string;
   page?: number;
   per_page?: number;
 }
@@ -14,6 +15,16 @@ export async function fetchProductos(filters: ProductoFilters) {
   const { data } = await apiClient.get<PaginatedResponse<Producto>>("/productos", {
     params: filters,
   });
+  return data;
+}
+
+export interface TejidoResumen {
+  nombre_tejido: string;
+  count: number;
+}
+
+export async function fetchTejidos() {
+  const { data } = await apiClient.get<TejidoResumen[]>("/productos/tejidos");
   return data;
 }
 

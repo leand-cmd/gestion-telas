@@ -6,7 +6,7 @@ import { Column, DataTable } from "../../components/DataTable";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { ImportModal } from "../../components/ImportModal";
 import { Pagination } from "../../components/Pagination";
-import type { Coleccion, Producto } from "../../api/types";
+import type { Producto } from "../../api/types";
 import { colors } from "../../theme/colors";
 import { fetchColecciones } from "../colecciones/coleccionesApi";
 import { ProductoForm } from "./ProductoForm";
@@ -14,12 +14,10 @@ import {
   deleteProducto,
   exportProductos,
   fetchProductos,
+  fetchTejidos,
   importProductos,
 } from "./productosApi";
 
-const SIN_COLECCION = "Sin colección";
-
-type ColeccionId = number | "none";
 type SubViewMode = "tabla" | "galeria";
 
 interface ProductosGaleriaProps {
@@ -65,18 +63,18 @@ function ProductosGaleria({ items, onCardClick }: { items: Producto[]; onCardCli
   );
 }
 
-function ColeccionExpandida({
-  coleccionId,
+function TejidoExpandido({
+  nombreTejido,
   columns,
   onCardClick,
-}: { coleccionId: ColeccionId } & ProductosGaleriaProps) {
+}: { nombreTejido: string } & ProductosGaleriaProps) {
   const [page, setPage] = useState(1);
   const [subView, setSubView] = useState<SubViewMode>("galeria");
 
   const { data, isLoading } = useQuery({
-    queryKey: ["productos-coleccion", coleccionId, page, subView],
+    queryKey: ["productos-tejido", nombreTejido, page, subView],
     queryFn: () =>
-      fetchProductos({ coleccion_id: coleccionId, page, per_page: subView === "galeria" ? 12 : 10 }),
+      fetchProductos({ nombre_tejido: nombreTejido, page, per_page: subView === "galeria" ? 12 : 10 }),
   });
 
   return (
@@ -100,7 +98,7 @@ function ColeccionExpandida({
           rows={data?.items ?? []}
           rowKey={(p) => p.id}
           loading={isLoading}
-          emptyMessage="Esta colección no tiene productos"
+          emptyMessage="Este tejido no tiene productos"
         />
       ) : isLoading ? (
         <div style={{ padding: 24, textAlign: "center", color: colors.grayNeutral }}>
@@ -108,7 +106,7 @@ function ColeccionExpandida({
         </div>
       ) : (data?.items.length ?? 0) === 0 ? (
         <div style={{ padding: 24, textAlign: "center", color: colors.grayNeutral }}>
-          Esta colección no tiene productos
+          Este tejido no tiene productos
         </div>
       ) : (
         <ProductosGaleria items={data?.items ?? []} onCardClick={onCardClick} />
@@ -163,7 +161,7 @@ export function ProductosList() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [view, setView] = useState<ViewMode>("tabla");
-  const [expandedId, setExpandedId] = useState<ColeccionId | null>(null);
+  const [expandedTejido, setExpandedTejido] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Producto | null>(null);
   const [deleting, setDeleting] = useState<Producto | null>(null);
@@ -177,15 +175,25 @@ export function ProductosList() {
     enabled: view === "tabla",
   });
 
+  const { data: tejidosData } = useQuery({
+    queryKey: ["productos-tejidos"],
+    queryFn: fetchTejidos,
+    enabled: view === "galeria",
+  });
+
   const { data: coleccionesData } = useQuery({
     queryKey: ["colecciones"],
     queryFn: fetchColecciones,
   });
   const coleccionPorId = new Map((coleccionesData?.items ?? []).map((c) => [c.id, c]));
+  const imagenPorNombreTejido = new Map(
+    (coleccionesData?.items ?? []).map((c) => [c.nombre.trim().toLowerCase(), c.imagen_url])
+  );
 
   const refetch = () => {
     queryClient.invalidateQueries({ queryKey: ["productos"] });
-    queryClient.invalidateQueries({ queryKey: ["productos-coleccion"] });
+    queryClient.invalidateQueries({ queryKey: ["productos-tejido"] });
+    queryClient.invalidateQueries({ queryKey: ["productos-tejidos"] });
     queryClient.invalidateQueries({ queryKey: ["colecciones"] });
   };
 
@@ -255,15 +263,6 @@ export function ProductosList() {
         </div>
       ),
     },
-  ];
-
-  const tarjetas: { id: ColeccionId; coleccion: Coleccion | null; count: number }[] = [
-    ...(coleccionesData?.items ?? []).map((c) => ({
-      id: c.id as ColeccionId,
-      coleccion: c,
-      count: c.productos_count ?? 0,
-    })),
-    { id: "none" as ColeccionId, coleccion: null, count: coleccionesData?.sin_coleccion_count ?? 0 },
   ];
 
   return (
@@ -343,17 +342,26 @@ export function ProductosList() {
             alignItems: "start",
           }}
         >
-          {tarjetas.map(({ id, coleccion, count }) => (
-            <div key={id} style={{ gridColumn: expandedId === id ? "1 / -1" : undefined }}>
+          {(tejidosData ?? []).map(({ nombre_tejido, count }) => (
+            <div
+              key={nombre_tejido}
+              style={{ gridColumn: expandedTejido === nombre_tejido ? "1 / -1" : undefined }}
+            >
               <ColeccionCard
-                nombre={coleccion?.nombre ?? SIN_COLECCION}
-                imagenUrl={coleccion?.imagen_url ?? null}
+                nombre={nombre_tejido}
+                imagenUrl={imagenPorNombreTejido.get(nombre_tejido.trim().toLowerCase()) ?? null}
                 count={count}
-                expanded={expandedId === id}
-                onToggle={() => setExpandedId(expandedId === id ? null : id)}
+                expanded={expandedTejido === nombre_tejido}
+                onToggle={() =>
+                  setExpandedTejido(expandedTejido === nombre_tejido ? null : nombre_tejido)
+                }
               />
-              {expandedId === id && (
-                <ColeccionExpandida coleccionId={id} columns={columns} onCardClick={abrirEditar} />
+              {expandedTejido === nombre_tejido && (
+                <TejidoExpandido
+                  nombreTejido={nombre_tejido}
+                  columns={columns}
+                  onCardClick={abrirEditar}
+                />
               )}
             </div>
           ))}

@@ -4,7 +4,7 @@ import io
 from flask import Blueprint, Response, jsonify, request
 from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
-from sqlalchemy import or_
+from sqlalchemy import func, or_
 
 from app.extensions import db
 from app.models.coleccion import Coleccion
@@ -75,6 +75,10 @@ def listar_productos():
     elif coleccion_id is not None and coleccion_id != "":
         query = query.filter(Producto.coleccion_id == int(coleccion_id))
 
+    nombre_tejido = request.args.get("nombre_tejido")
+    if nombre_tejido:
+        query = query.filter(Producto.nombre_tejido == nombre_tejido)
+
     query = query.order_by(Producto.cod_producto.asc())
 
     result = paginate(query)
@@ -87,6 +91,18 @@ def listar_productos():
             "pages": result["pages"],
         }
     )
+
+
+@productos_bp.get("/tejidos")
+@jwt_required()
+def listar_tejidos():
+    filas = (
+        db.session.query(Producto.nombre_tejido, func.count(Producto.id))
+        .group_by(Producto.nombre_tejido)
+        .order_by(Producto.nombre_tejido.asc())
+        .all()
+    )
+    return jsonify([{"nombre_tejido": nombre, "count": count} for nombre, count in filas])
 
 
 @productos_bp.post("")

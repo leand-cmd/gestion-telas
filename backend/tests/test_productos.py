@@ -66,6 +66,31 @@ def test_search_productos(client, auth_headers):
     assert data["items"][0]["cod_producto"] == "TEL-200"
 
 
+def test_listar_tejidos_agrupa_por_nombre_tejido(client, auth_headers):
+    client.post("/api/productos", json=producto_payload(cod="TEL-400"), headers=auth_headers)
+    client.post(
+        "/api/productos",
+        json=producto_payload(cod="TEL-401") | {"nombre_tejido": "Boston"},
+        headers=auth_headers,
+    )
+    client.post(
+        "/api/productos",
+        json=producto_payload(cod="TEL-402") | {"nombre_tejido": "Tull Frances"},
+        headers=auth_headers,
+    )
+
+    resp = client.get("/api/productos/tejidos", headers=auth_headers)
+    assert resp.status_code == 200
+    tejidos = {t["nombre_tejido"]: t["count"] for t in resp.get_json()}
+    assert tejidos["Boston"] == 2
+    assert tejidos["Tull Frances"] == 1
+
+    resp_filtro = client.get("/api/productos?nombre_tejido=Tull Frances", headers=auth_headers)
+    data = resp_filtro.get_json()
+    assert data["total"] == 1
+    assert data["items"][0]["cod_producto"] == "TEL-402"
+
+
 def test_asignar_coleccion_a_producto(client, auth_headers):
     coleccion_id = client.post(
         "/api/colecciones", json={"nombre": "TUL Frances"}, headers=auth_headers

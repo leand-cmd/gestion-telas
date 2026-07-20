@@ -1,10 +1,8 @@
 import { FormEvent, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
 import type { Producto } from "../../api/types";
 import { colors } from "../../theme/colors";
-import { fetchColecciones } from "../colecciones/coleccionesApi";
 import {
   createProducto,
   updateProducto,
@@ -55,11 +53,6 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
   });
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
-
-  const { data: coleccionesData } = useQuery({
-    queryKey: ["colecciones"],
-    queryFn: fetchColecciones,
-  });
 
   const handleImageUpload = async (file: File | null) => {
     if (!file) return;
@@ -132,32 +125,12 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
             />
           </div>
           <div>
-            <label htmlFor="coleccion">Colección (texto libre)</label>
+            <label htmlFor="coleccion">Colección</label>
             <input
               id="coleccion"
               value={form.coleccion ?? ""}
               onChange={(e) => setForm({ ...form, coleccion: e.target.value })}
             />
-          </div>
-          <div>
-            <label htmlFor="coleccion_id">Colección (agrupar con imagen)</label>
-            <select
-              id="coleccion_id"
-              value={form.coleccion_id ?? ""}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  coleccion_id: e.target.value ? Number(e.target.value) : null,
-                })
-              }
-            >
-              <option value="">Sin colección</option>
-              {(coleccionesData?.items ?? []).map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nombre}
-                </option>
-              ))}
-            </select>
           </div>
           <div>
             <label htmlFor="nombre_tejido">Nombre Tejido</label>
