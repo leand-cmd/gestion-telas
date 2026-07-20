@@ -18,22 +18,27 @@ productos_bp = Blueprint("productos", __name__)
 
 CSV_COLUMNS = [
     "cod_producto",
-    "cod_categoria",
-    "cod_color",
+    "proveedor",
+    "marca",
+    "coleccion",
     "nombre_tejido",
+    "cod_color",
     "color_general",
     "color_descripcion",
     "categoria",
     "sub_categoria",
+    "tipo_diseno",
     "composicion",
+    "linea_sugerida",
     "ancho_cm",
     "gramaje_gm2",
     "precio_rollo",
     "precio_media_rollo",
     "precio_corte",
-    "unidad_medida",
     "stock_rollos",
     "activo",
+    "fecha_creacion",
+    "notas",
 ]
 
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
@@ -162,13 +167,15 @@ def importar_productos():
         return jsonify({"error": str(err)}), 400
 
     # Alias de columnas que en los maestros reales vienen con otro nombre
-    # (ej. Maestro_Limpio.xlsx trae "Descripcion_Completa" y "Stock" en vez
-    # de nuestros nombres de campo). read_tabular_file ya normaliza
-    # mayusculas/espacios/acentos a snake_case; esto cubre los casos donde
-    # el nombre de la columna origen es directamente distinto al campo.
+    # (ej. Maestro_Limpio.xlsx trae "Descripcion_Completa", "Stock" y
+    # "Color (Inferido visualmente)" en vez de nuestros nombres de campo).
+    # read_tabular_file ya normaliza mayusculas/espacios/acentos a
+    # snake_case; esto cubre los casos donde el nombre de la columna origen
+    # es directamente distinto al campo.
     COLUMN_ALIASES = {
         "descripcion_completa": "descripcion",
         "stock": "stock_rollos",
+        "color_inferido_visualmente": "color_descripcion",
     }
 
     errors = []
@@ -192,22 +199,27 @@ def importar_productos():
             data = producto_schema.load(
                 {
                     "cod_producto": (row.get("cod_producto") or "").strip(),
-                    "cod_categoria": row.get("cod_categoria") or None,
+                    "proveedor": row.get("proveedor") or None,
+                    "marca": row.get("marca") or None,
+                    "coleccion": row.get("coleccion") or None,
                     "cod_color": row.get("cod_color") or None,
                     "nombre_tejido": nombre_tejido,
                     "color_general": row.get("color_general") or None,
                     "color_descripcion": row.get("color_descripcion") or None,
                     "categoria": (row.get("categoria") or "").strip(),
                     "sub_categoria": row.get("sub_categoria") or None,
+                    "tipo_diseno": row.get("tipo_diseno") or None,
                     "composicion": row.get("composicion") or None,
+                    "linea_sugerida": row.get("linea_sugerida") or None,
                     "ancho_cm": row.get("ancho_cm") or None,
                     "gramaje_gm2": row.get("gramaje_gm2") or None,
                     "precio_rollo": _precio("precio_rollo"),
                     "precio_media_rollo": _precio("precio_media_rollo"),
                     "precio_corte": _precio("precio_corte"),
-                    "unidad_medida": row.get("unidad_medida") or "metro",
                     "stock_rollos": row.get("stock_rollos") or 0,
                     "descripcion": row.get("descripcion") or None,
+                    "fecha_creacion": row.get("fecha_creacion") or None,
+                    "notas": row.get("notas") or None,
                     "activo": (row.get("activo", "true") or "true").lower() != "false",
                 }
             )

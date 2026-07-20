@@ -4,21 +4,26 @@ import io
 def producto_payload(cod="TEL-001"):
     return {
         "cod_producto": cod,
-        "cod_categoria": "TEJ",
+        "proveedor": "KARRETEL",
+        "marca": "KARRETEL",
+        "coleccion": "Tejidos de Coleccion",
         "cod_color": "AZ01",
         "nombre_tejido": "Boston",
         "color_general": "Azul",
         "color_descripcion": "Azul marino",
         "categoria": "Tejido plano",
         "sub_categoria": "Estampado",
+        "tipo_diseno": "Liso",
         "composicion": "100% Algodon",
+        "linea_sugerida": "Vestir",
         "ancho_cm": 150.0,
         "gramaje_gm2": 180.0,
         "precio_rollo": 13900,
         "precio_media_rollo": None,
         "precio_corte": 16680,
-        "unidad_medida": "metro",
         "stock_rollos": 100,
+        "fecha_creacion": "2026-07-17",
+        "notas": None,
     }
 
 
