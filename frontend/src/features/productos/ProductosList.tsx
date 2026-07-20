@@ -10,6 +10,7 @@ import type { Coleccion, Producto } from "../../api/types";
 import { colors } from "../../theme/colors";
 import { ColeccionForm } from "../colecciones/ColeccionForm";
 import { fetchColecciones } from "../colecciones/coleccionesApi";
+import { ProductoDetalleModal } from "./ProductoDetalleModal";
 import { ProductoForm } from "./ProductoForm";
 import {
   deleteProducto,
@@ -23,10 +24,17 @@ type SubViewMode = "tabla" | "galeria";
 
 interface ProductosGaleriaProps {
   columns: Column<Producto>[];
-  onCardClick: (p: Producto) => void;
+  onEditar: (p: Producto) => void;
+  onDetalle: (p: Producto) => void;
+  onImagenClick: (url: string) => void;
 }
 
-function ProductosGaleria({ items, onCardClick }: { items: Producto[]; onCardClick: (p: Producto) => void }) {
+function ProductosGaleria({
+  items,
+  onEditar,
+  onDetalle,
+  onImagenClick,
+}: { items: Producto[] } & Omit<ProductosGaleriaProps, "columns">) {
   return (
     <div
       style={{
@@ -36,13 +44,27 @@ function ProductosGaleria({ items, onCardClick }: { items: Producto[]; onCardCli
       }}
     >
       {items.map((p) => (
-        <div
-          key={p.id}
-          className="card"
-          style={{ padding: 16, cursor: "pointer" }}
-          onClick={() => onCardClick(p)}
-        >
+        <div key={p.id} className="card" style={{ padding: 16, position: "relative" }}>
+          <div style={{ position: "absolute", top: 10, right: 10, display: "flex", gap: 6, zIndex: 1 }}>
+            <button
+              className="btn btn-secondary"
+              style={{ padding: "4px 8px", fontSize: 12 }}
+              onClick={() => onEditar(p)}
+              title="Editar producto"
+            >
+              ✎
+            </button>
+            <button
+              className="btn btn-secondary"
+              style={{ padding: "4px 8px", fontSize: 12 }}
+              onClick={() => onDetalle(p)}
+              title="Ver detalle"
+            >
+              🔍
+            </button>
+          </div>
           <div
+            onClick={() => p.url_imagen && onImagenClick(p.url_imagen)}
             style={{
               width: "100%",
               height: 140,
@@ -51,6 +73,7 @@ function ProductosGaleria({ items, onCardClick }: { items: Producto[]; onCardCli
                 ? `url(${p.url_imagen}) center/cover`
                 : colors.gradientBackground,
               marginBottom: 12,
+              cursor: p.url_imagen ? "zoom-in" : "default",
             }}
           />
           <div style={{ fontWeight: 700, fontSize: 14 }}>{p.cod_producto}</div>
@@ -67,7 +90,9 @@ function ProductosGaleria({ items, onCardClick }: { items: Producto[]; onCardCli
 function TejidoExpandido({
   nombreTejido,
   columns,
-  onCardClick,
+  onEditar,
+  onDetalle,
+  onImagenClick,
 }: { nombreTejido: string } & ProductosGaleriaProps) {
   const [page, setPage] = useState(1);
   const [subView, setSubView] = useState<SubViewMode>("galeria");
@@ -110,7 +135,12 @@ function TejidoExpandido({
           Este tejido no tiene productos
         </div>
       ) : (
-        <ProductosGaleria items={data?.items ?? []} onCardClick={onCardClick} />
+        <ProductosGaleria
+          items={data?.items ?? []}
+          onEditar={onEditar}
+          onDetalle={onDetalle}
+          onImagenClick={onImagenClick}
+        />
       )}
 
       {data && (
@@ -188,6 +218,7 @@ export function ProductosList() {
   const [expandedTejido, setExpandedTejido] = useState<string | null>(null);
   const [editingColeccionTejido, setEditingColeccionTejido] = useState<string | null>(null);
   const [imagenExpandida, setImagenExpandida] = useState<string | null>(null);
+  const [detalleProducto, setDetalleProducto] = useState<Producto | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Producto | null>(null);
   const [deleting, setDeleting] = useState<Producto | null>(null);
@@ -384,7 +415,9 @@ export function ProductosList() {
               <TejidoExpandido
                 nombreTejido={expandedTejido}
                 columns={columns}
-                onCardClick={abrirEditar}
+                onEditar={abrirEditar}
+                onDetalle={setDetalleProducto}
+                onImagenClick={setImagenExpandida}
               />
             </div>
           )}
@@ -440,6 +473,19 @@ export function ProductosList() {
             setEditingColeccionTejido(null);
             queryClient.invalidateQueries({ queryKey: ["colecciones"] });
           }}
+        />
+      )}
+
+      {detalleProducto && (
+        <ProductoDetalleModal
+          producto={detalleProducto}
+          onClose={() => setDetalleProducto(null)}
+          onEditar={() => {
+            const p = detalleProducto;
+            setDetalleProducto(null);
+            abrirEditar(p);
+          }}
+          onImagenClick={() => setImagenExpandida(detalleProducto.url_imagen)}
         />
       )}
 
