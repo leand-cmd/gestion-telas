@@ -21,6 +21,11 @@ frontend/.env.local
 backend/uploads/productos/*
 !backend/uploads/productos/.gitkeep
 
+# Material de referencia pesado (catalogos PDF, imagenes extraidas) -
+# no va en git, GitHub rechaza archivos de mas de 100MB
+/PDFs/
+backend/extracted_images/
+
 # Editor / OS
 .vscode/
 .DS_Store
