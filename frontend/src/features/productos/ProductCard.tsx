@@ -16,8 +16,6 @@ export function ProductCard({ producto: p, onDetalle, onEditar, onUploaded }: Pr
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const formatPrecio = (v: number | null) => (v != null ? `₲ ${v.toLocaleString("es-PY")}` : "-");
-
   const handleFile = async (file: File | null) => {
     if (!file) return;
     setUploading(true);
@@ -44,9 +42,7 @@ export function ProductCard({ producto: p, onDetalle, onEditar, onUploaded }: Pr
       <div style={{ fontSize: 12, color: colors.grayNeutral, marginBottom: 8 }}>
         {p.color_general ?? "-"}
       </div>
-      <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 10 }}>
-        {formatPrecio(p.precio_rollo)}
-      </div>
+      <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 10 }}>{p.categoria || "-"}</div>
       <div style={{ display: "flex", gap: 6 }}>
         <button
           className="btn btn-secondary"
