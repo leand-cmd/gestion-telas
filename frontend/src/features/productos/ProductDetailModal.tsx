@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import type { Producto } from "../../api/types";
 import { colors } from "../../theme/colors";
 
@@ -19,6 +21,7 @@ function Campo({ label, value }: { label: string; value: string | number | null 
 }
 
 export function ProductDetailModal({ producto: p, onClose }: ProductDetailModalProps) {
+  const [imagenExpandida, setImagenExpandida] = useState(false);
   const formatPrecio = (v: number | null) => (v != null ? `₲ ${v.toLocaleString("es-PY")}` : null);
 
   return (
@@ -49,7 +52,14 @@ export function ProductDetailModal({ producto: p, onClose }: ProductDetailModalP
           <img
             src={p.imagen_url}
             alt={p.cod_producto}
-            style={{ width: "100%", maxHeight: 260, objectFit: "cover", borderRadius: 16 }}
+            onClick={() => setImagenExpandida(true)}
+            style={{
+              width: "100%",
+              maxHeight: 260,
+              objectFit: "cover",
+              borderRadius: 16,
+              cursor: "zoom-in",
+            }}
           />
         )}
 
@@ -74,13 +84,33 @@ export function ProductDetailModal({ producto: p, onClose }: ProductDetailModalP
             <Campo label="Descripción" value={p.descripcion} />
           </div>
         </div>
-
-        <div className="modal-actions">
-          <button type="button" className="btn btn-secondary" onClick={onClose}>
-            Cerrar
-          </button>
-        </div>
       </div>
+
+      {imagenExpandida && p.imagen_url && (
+        <div
+          className="lightbox-overlay"
+          style={{ zIndex: 1300 }}
+          onClick={() => setImagenExpandida(false)}
+        >
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => setImagenExpandida(false)}
+            style={{
+              position: "absolute",
+              top: 20,
+              right: 20,
+              padding: "4px 10px",
+              fontSize: 16,
+              lineHeight: 1,
+            }}
+            title="Cerrar"
+          >
+            ✕
+          </button>
+          <img src={p.imagen_url} alt={p.cod_producto} className="lightbox-imagen" />
+        </div>
+      )}
     </div>
   );
 }
