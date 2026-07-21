@@ -55,12 +55,7 @@ export function ColeccionCard({
       <div
         className="coleccion-card-imagen"
         style={{
-          background: imagenUrl ? `url(${imagenUrl}) center/cover` : colors.gradientBackground,
-        }}
-        onClick={(e) => {
-          if (!imagenUrl) return;
-          e.stopPropagation();
-          onImagenClick();
+          backgroundImage: imagenUrl ? `url(${imagenUrl})` : colors.gradientBackground,
         }}
       />
       <div style={{ fontWeight: 700, fontSize: 15 }}>{nombre}</div>

@@ -247,7 +247,9 @@ tr:hover td {
   min-height: 0;
   border-radius: 16px;
   margin-bottom: 12px;
-  cursor: zoom-in;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .productos-expandidos {
@@ -447,6 +449,12 @@ tr:hover td {
 
   .coleccion-card {
     height: 320px;
+  }
+
+  .coleccion-card-imagen {
+    background-size: contain;
+    background-color: var(--color-gray-light);
+    cursor: pointer;
   }
 
   .productos-grid {

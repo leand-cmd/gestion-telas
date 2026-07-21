@@ -22,13 +22,27 @@ export function ProductDetailModal({ producto: p, onClose }: ProductDetailModalP
   const formatPrecio = (v: number | null) => (v != null ? `₲ ${v.toLocaleString("es-PY")}` : null);
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="card modal-card" style={{ maxWidth: 560 }} onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+    <div className="modal-overlay">
+      <div className="card modal-card" style={{ maxWidth: 560, position: "relative" }}>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={onClose}
+          style={{
+            position: "absolute",
+            top: 12,
+            right: 12,
+            padding: "4px 10px",
+            fontSize: 14,
+            lineHeight: 1,
+          }}
+          title="Cerrar"
+        >
+          ✕
+        </button>
+
+        <div style={{ paddingRight: 32 }}>
           <h3 style={{ margin: 0, color: colors.purpleDark }}>{p.cod_producto}</h3>
-          <span className={`badge ${p.activo ? "badge-active" : "badge-inactive"}`}>
-            {p.activo ? "Activo" : "Inactivo"}
-          </span>
         </div>
 
         {p.imagen_url && (
