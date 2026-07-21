@@ -108,9 +108,9 @@ def test_import_productos_csv_mapea_precios_karretel(client, auth_headers):
     assert productos[0]["precio_corte"] == 13560
 
 
-def test_import_crea_coleccion_automaticamente_por_nombre_tejido(client, auth_headers):
+def test_import_crea_coleccion_automaticamente_por_coleccion(client, auth_headers):
     csv_content = (
-        "cod_producto,nombre_tejido,categoria,stock_rollos\n"
+        "cod_producto,coleccion,categoria,stock_rollos\n"
         "TEL-600,Tull Frances,Tejido plano,10\n"
         "TEL-601,Tull Frances,Tejido plano,5\n"
         "TEL-602,Boston,Tejido plano,3\n"
@@ -130,7 +130,7 @@ def test_import_crea_coleccion_automaticamente_por_nombre_tejido(client, auth_he
     assert nombres["Tull Frances"] == 2
     assert nombres["Boston"] == 1
 
-    # Reimportar con el mismo nombre_tejido no debe duplicar la coleccion
+    # Reimportar con la misma coleccion no debe duplicarla
     resp2 = client.post(
         "/api/productos/import",
         data={"file": (io.BytesIO(csv_content.encode()), "productos.csv")},

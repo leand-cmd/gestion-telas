@@ -39,18 +39,18 @@ CSV_COLUMNS = [
 ]
 
 
-def _resolver_coleccion_id(nombre_tejido: str) -> int | None:
+def _resolver_coleccion_id(nombre_coleccion: str) -> int | None:
     """Busca una Coleccion por nombre (case-insensitive); si no existe, la
     crea (sin imagen todavia) para que el producto quede enganchado por FK."""
-    nombre_tejido = (nombre_tejido or "").strip()
-    if not nombre_tejido:
+    nombre_coleccion = (nombre_coleccion or "").strip()
+    if not nombre_coleccion:
         return None
 
-    existente = Coleccion.query.filter(func.lower(Coleccion.nombre) == nombre_tejido.lower()).first()
+    existente = Coleccion.query.filter(func.lower(Coleccion.nombre) == nombre_coleccion.lower()).first()
     if existente:
         return existente.id
 
-    nueva = Coleccion(nombre=nombre_tejido)
+    nueva = Coleccion(nombre=nombre_coleccion)
     db.session.add(nueva)
     db.session.flush()
     return nueva.id
@@ -192,6 +192,7 @@ def importar_productos():
 
         nombre_tejido = (row.get("nombre_tejido") or "").strip()
         precio_karretel = buscar_precio_karretel(nombre_tejido) or {}
+        nombre_coleccion = (row.get("coleccion") or "").strip()
 
         def _precio(campo):
             valor = row.get(campo)
@@ -205,7 +206,7 @@ def importar_productos():
                     "cod_producto": (row.get("cod_producto") or "").strip(),
                     "proveedor": row.get("proveedor") or None,
                     "marca": row.get("marca") or None,
-                    "coleccion_id": _resolver_coleccion_id(nombre_tejido),
+                    "coleccion_id": _resolver_coleccion_id(nombre_coleccion),
                     "cod_color": row.get("cod_color") or None,
                     "color_general": row.get("color_general") or None,
                     "color_descripcion": row.get("color_descripcion") or None,
