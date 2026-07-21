@@ -15,6 +15,7 @@ interface ProductoFormProps {
 
 const EMPTY: ProductoInput = {
   cod_producto: "",
+  proveedor: "",
   marca: "",
   coleccion_id: null,
   cod_color: "",
@@ -93,6 +94,14 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
               value={form.cod_producto}
               onChange={(e) => setForm({ ...form, cod_producto: e.target.value })}
               required
+            />
+          </div>
+          <div>
+            <label htmlFor="proveedor">Proveedor</label>
+            <input
+              id="proveedor"
+              value={form.proveedor ?? ""}
+              onChange={(e) => setForm({ ...form, proveedor: e.target.value })}
             />
           </div>
           <div>

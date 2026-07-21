@@ -33,6 +33,7 @@ export function ProductoDetalleModal({ producto: p, onClose, onEditar }: Product
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <Campo label="Proveedor" value={p.proveedor} />
           <Campo label="Marca" value={p.marca} />
           <Campo label="Categoría" value={p.categoria} />
           <Campo label="Sub Categoría" value={p.sub_categoria} />

@@ -42,6 +42,7 @@ export interface Cliente {
 export interface Producto {
   id: number;
   cod_producto: string;
+  proveedor: string | null;
   marca: string | null;
   coleccion_id: number | null;
   cod_color: string | null;

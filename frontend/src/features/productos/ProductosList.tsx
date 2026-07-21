@@ -236,6 +236,7 @@ export function ProductosList() {
 
   const columns: Column<Producto>[] = [
     { header: "Cod Producto", render: (p) => p.cod_producto },
+    { header: "Proveedor", render: (p) => p.proveedor ?? "-" },
     { header: "Marca", render: (p) => p.marca ?? "-" },
     {
       header: "Colección",
@@ -275,6 +276,7 @@ export function ProductosList() {
         </span>
       ),
     },
+    { header: "Descripción", render: (p) => p.descripcion ?? "-", truncate: true, minWidth: 180 },
     {
       header: "Acciones",
       render: (p) => (
