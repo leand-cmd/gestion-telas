@@ -13,7 +13,7 @@ import re
 # CONFIGURACIÓN
 # ============================================================
 
-PDF_FILE = Path("Lista_de_precios__140726.pdf")
+PDF_FILE = Path("Lista de precios - 14-07-26.pdf")
 MAESTRO_FILE = Path("MAESTRO_CON_URLS_CLOUDINARY.xlsx")
 OUTPUT_FILE = Path("MAESTRO_CON_PRECIOS.xlsx")
 DATABASE_URL = "postgresql://postgres:SjUafZYzpKWrXzOpSDgNQISoUGTNTMYw@tokaido.proxy.rlwy.net:44666/railway"
