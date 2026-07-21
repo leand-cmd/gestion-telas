@@ -396,31 +396,32 @@ export function ProductosList() {
             const imagenUrl =
               coleccionPorNombreTejido.get(nombre_tejido.trim().toLowerCase())?.imagen_url ?? null;
             return (
-              <ColeccionCard
-                key={nombre_tejido}
-                nombre={nombre_tejido}
-                imagenUrl={imagenUrl}
-                count={count}
-                expanded={expandedTejido === nombre_tejido}
-                onToggle={() =>
-                  setExpandedTejido(expandedTejido === nombre_tejido ? null : nombre_tejido)
-                }
-                onEdit={() => setEditingColeccionTejido(nombre_tejido)}
-                onImagenClick={() => setImagenExpandida(imagenUrl)}
-              />
+              <div key={nombre_tejido} className="coleccion-wrapper">
+                <ColeccionCard
+                  nombre={nombre_tejido}
+                  imagenUrl={imagenUrl}
+                  count={count}
+                  expanded={expandedTejido === nombre_tejido}
+                  onToggle={() =>
+                    setExpandedTejido(expandedTejido === nombre_tejido ? null : nombre_tejido)
+                  }
+                  onEdit={() => setEditingColeccionTejido(nombre_tejido)}
+                  onImagenClick={() => setImagenExpandida(imagenUrl)}
+                />
+                {expandedTejido === nombre_tejido && (
+                  <div className="productos-expandidos">
+                    <TejidoExpandido
+                      nombreTejido={nombre_tejido}
+                      columns={columns}
+                      onEditar={abrirEditar}
+                      onDetalle={setDetalleProducto}
+                      onImagenClick={setImagenExpandida}
+                    />
+                  </div>
+                )}
+              </div>
             );
           })}
-          {expandedTejido && (
-            <div className="productos-expandidos">
-              <TejidoExpandido
-                nombreTejido={expandedTejido}
-                columns={columns}
-                onEditar={abrirEditar}
-                onDetalle={setDetalleProducto}
-                onImagenClick={setImagenExpandida}
-              />
-            </div>
-          )}
         </div>
       )}
 
