@@ -255,6 +255,26 @@ tr:hover td {
   margin-top: 8px;
 }
 
+.productos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.product-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.product-card-imagen {
+  height: 160px;
+  border-radius: 16px;
+  margin-bottom: 10px;
+  background-size: cover;
+  background-position: center;
+}
+
 .lightbox-overlay {
   position: fixed;
   inset: 0;
@@ -427,6 +447,10 @@ tr:hover td {
 
   .coleccion-card {
     height: 320px;
+  }
+
+  .productos-grid {
+    grid-template-columns: 1fr;
   }
 
   .lightbox-imagen {

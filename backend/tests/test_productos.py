@@ -84,6 +84,30 @@ def test_asignar_coleccion_a_producto(client, auth_headers):
     assert resp_inexistente.status_code == 400
 
 
+def test_listar_colecciones_con_productos(client, auth_headers):
+    coleccion_id = client.post(
+        "/api/colecciones", json={"nombre": "TUL Frances"}, headers=auth_headers
+    ).get_json()["id"]
+
+    client.post(
+        "/api/productos",
+        json=producto_payload(cod="TEL-400") | {"coleccion_id": coleccion_id},
+        headers=auth_headers,
+    )
+    client.post("/api/productos", json=producto_payload(cod="TEL-401"), headers=auth_headers)
+
+    resp = client.get("/api/productos/colecciones", headers=auth_headers)
+    assert resp.status_code == 200
+    data = resp.get_json()
+
+    grupo_coleccion = next(g for g in data if g["id"] == coleccion_id)
+    assert [p["cod_producto"] for p in grupo_coleccion["productos"]] == ["TEL-400"]
+
+    grupo_sin_coleccion = next(g for g in data if g["id"] is None)
+    assert grupo_sin_coleccion["nombre"] == "Sin colección"
+    assert [p["cod_producto"] for p in grupo_sin_coleccion["productos"]] == ["TEL-401"]
+
+
 def test_import_productos_csv_mapea_precios_karretel(client, auth_headers):
     csv_content = (
         "cod_producto,nombre_tejido,categoria,stock_rollos\n"

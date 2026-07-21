@@ -6,10 +6,10 @@ import { Column, DataTable } from "../../components/DataTable";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { ImportModal } from "../../components/ImportModal";
 import { Pagination } from "../../components/Pagination";
-import type { Coleccion, Producto } from "../../api/types";
+import type { Producto } from "../../api/types";
 import { colors } from "../../theme/colors";
-import { ColeccionForm } from "../colecciones/ColeccionForm";
 import { fetchColecciones } from "../colecciones/coleccionesApi";
+import { GaleriaProductos } from "./GaleriaProductos";
 import { ProductoForm } from "./ProductoForm";
 import {
   deleteProducto,
@@ -18,158 +18,12 @@ import {
   importProductos,
 } from "./productosApi";
 
-const SIN_COLECCION = "Sin colección";
-
-type ColeccionId = number | "none";
-
-function ColeccionExpandida({
-  coleccionId,
-  onEditar,
-  onEliminar,
-}: {
-  coleccionId: ColeccionId;
-  onEditar: (p: Producto) => void;
-  onEliminar: (p: Producto) => void;
-}) {
-  const [page, setPage] = useState(1);
-
-  const { data, isLoading } = useQuery({
-    queryKey: ["productos-coleccion", coleccionId, page],
-    queryFn: () => fetchProductos({ coleccion_id: coleccionId, page, per_page: 10 }),
-  });
-
-  const formatPrecio = (v: number | null) => (v != null ? `₲ ${v.toLocaleString("es-PY")}` : "-");
-
-  const columnas: Column<Producto>[] = [
-    { header: "Cod Producto", render: (p) => p.cod_producto },
-    { header: "Color", render: (p) => p.color_general ?? "-" },
-    { header: "Precio Rollo", render: (p) => formatPrecio(p.precio_rollo) },
-    { header: "Stock", render: (p) => p.stock_rollos ?? 0 },
-    {
-      header: "Acciones",
-      render: (p) => (
-        <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn btn-secondary" onClick={() => onEditar(p)}>
-            Editar
-          </button>
-          <button className="btn btn-danger" onClick={() => onEliminar(p)}>
-            Eliminar
-          </button>
-        </div>
-      ),
-    },
-  ];
-
-  return (
-    <div
-      className="card"
-      style={{ marginTop: 12, background: "rgba(108,93,209,0.04)" }}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <DataTable
-        columns={columnas}
-        rows={data?.items ?? []}
-        rowKey={(p) => p.id}
-        loading={isLoading}
-        emptyMessage="Esta colección no tiene productos"
-      />
-      {data && (
-        <Pagination page={data.page} pages={data.pages} total={data.total} onPageChange={setPage} />
-      )}
-    </div>
-  );
-}
-
-function ColeccionCard({
-  nombre,
-  imagenUrl,
-  count,
-  expanded,
-  onToggle,
-  onEdit,
-  onImagenClick,
-}: {
-  nombre: string;
-  imagenUrl: string | null;
-  count: number;
-  expanded: boolean;
-  onToggle: () => void;
-  onEdit?: () => void;
-  onImagenClick: () => void;
-}) {
-  return (
-    <div
-      className="card coleccion-card"
-      style={{ border: expanded ? `2px solid ${colors.purplePrimary}` : undefined }}
-      onClick={onToggle}
-    >
-      <div
-        className="coleccion-card-imagen"
-        style={{
-          background: imagenUrl ? `url(${imagenUrl}) center/cover` : colors.gradientBackground,
-        }}
-        onClick={(e) => {
-          if (!imagenUrl) return;
-          e.stopPropagation();
-          onImagenClick();
-        }}
-      />
-      <div style={{ fontWeight: 700, fontSize: 15 }}>{nombre}</div>
-      <div style={{ fontSize: 12, color: colors.grayNeutral, marginBottom: 8 }}>
-        {count} {count === 1 ? "producto" : "productos"}
-      </div>
-      <div style={{ display: "flex", gap: 8 }}>
-        {imagenUrl && (
-          <button
-            className="btn btn-secondary"
-            style={{ padding: "4px 10px", fontSize: 13 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onImagenClick();
-            }}
-            title="Ver imagen completa"
-          >
-            🔍
-          </button>
-        )}
-        {onEdit && (
-          <button
-            className="btn btn-secondary"
-            style={{ padding: "4px 10px", fontSize: 13 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit();
-            }}
-            title="Editar colección"
-          >
-            ✎
-          </button>
-        )}
-        <button
-          className="btn btn-secondary"
-          style={{ padding: "4px 10px", fontSize: 13, marginLeft: "auto" }}
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggle();
-          }}
-          title={expanded ? "Colapsar" : "Expandir"}
-        >
-          {expanded ? "−" : "+"}
-        </button>
-      </div>
-    </div>
-  );
-}
-
 type ViewMode = "tabla" | "galeria";
 
 export function ProductosList() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [view, setView] = useState<ViewMode>("tabla");
-  const [expandedColeccion, setExpandedColeccion] = useState<ColeccionId | null>(null);
-  const [editingColeccion, setEditingColeccion] = useState<Coleccion | null>(null);
-  const [imagenExpandida, setImagenExpandida] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Producto | null>(null);
   const [deleting, setDeleting] = useState<Producto | null>(null);
@@ -191,7 +45,6 @@ export function ProductosList() {
 
   const refetch = () => {
     queryClient.invalidateQueries({ queryKey: ["productos"] });
-    queryClient.invalidateQueries({ queryKey: ["productos-coleccion"] });
     queryClient.invalidateQueries({ queryKey: ["colecciones"] });
   };
 
@@ -243,15 +96,6 @@ export function ProductosList() {
         </div>
       ),
     },
-  ];
-
-  const tarjetas: { id: ColeccionId; coleccion: Coleccion | null; count: number }[] = [
-    ...(coleccionesData?.items ?? []).map((c) => ({
-      id: c.id as ColeccionId,
-      coleccion: c,
-      count: c.productos_count ?? 0,
-    })),
-    { id: "none" as ColeccionId, coleccion: null, count: coleccionesData?.sin_coleccion_count ?? 0 },
   ];
 
   return (
@@ -323,30 +167,7 @@ export function ProductosList() {
           )}
         </div>
       ) : (
-        <div className="colecciones-grid">
-          {tarjetas.map(({ id, coleccion, count }) => (
-            <div key={id} className="coleccion-wrapper">
-              <ColeccionCard
-                nombre={coleccion?.nombre ?? SIN_COLECCION}
-                imagenUrl={coleccion?.imagen_url ?? null}
-                count={count}
-                expanded={expandedColeccion === id}
-                onToggle={() => setExpandedColeccion(expandedColeccion === id ? null : id)}
-                onEdit={coleccion ? () => setEditingColeccion(coleccion) : undefined}
-                onImagenClick={() => setImagenExpandida(coleccion?.imagen_url ?? null)}
-              />
-              {expandedColeccion === id && (
-                <div className="productos-expandidos">
-                  <ColeccionExpandida
-                    coleccionId={id}
-                    onEditar={abrirEditar}
-                    onEliminar={setDeleting}
-                  />
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+        <GaleriaProductos />
       )}
 
       {formOpen && (
@@ -387,23 +208,6 @@ export function ProductosList() {
           onClose={() => setImportOpen(false)}
           onImported={refetch}
         />
-      )}
-
-      {editingColeccion && (
-        <ColeccionForm
-          coleccion={editingColeccion}
-          onClose={() => setEditingColeccion(null)}
-          onSaved={() => {
-            setEditingColeccion(null);
-            queryClient.invalidateQueries({ queryKey: ["colecciones"] });
-          }}
-        />
-      )}
-
-      {imagenExpandida && (
-        <div className="lightbox-overlay" onClick={() => setImagenExpandida(null)}>
-          <img src={imagenExpandida} alt="Imagen completa" className="lightbox-imagen" />
-        </div>
       )}
     </div>
   );

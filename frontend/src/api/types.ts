@@ -60,9 +60,18 @@ export interface Producto {
   precio_corte: number | null;
   stock_rollos: number | null;
   activo: boolean;
+  imagen_url: string | null;
   descripcion: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface ColeccionConProductos {
+  id: number | null;
+  nombre: string;
+  descripcion: string | null;
+  imagen_url: string | null;
+  productos: Producto[];
 }
 
 export interface PedidoDetalle {

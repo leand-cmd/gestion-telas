@@ -26,6 +26,7 @@ class Producto(db.Model):
     precio_corte = db.Column(db.Float)
     stock_rollos = db.Column(db.Integer, default=0)
     activo = db.Column(db.Boolean, default=True, nullable=False, index=True)
+    imagen_url = db.Column(db.String(500))
     descripcion = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = db.Column(
@@ -60,6 +61,7 @@ class Producto(db.Model):
             "precio_corte": self.precio_corte,
             "stock_rollos": self.stock_rollos,
             "activo": self.activo,
+            "imagen_url": self.imagen_url,
             "descripcion": self.descripcion,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,

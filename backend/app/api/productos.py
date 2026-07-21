@@ -10,11 +10,14 @@ from app.extensions import db
 from app.models.coleccion import Coleccion
 from app.models.producto import Producto
 from app.schemas.producto_schema import producto_schema, producto_update_schema
+from app.utils.cloudinary_upload import CloudinaryNotConfiguredError, upload_imagen
 from app.utils.importers import ImportError_, build_import_report, read_tabular_file
 from app.utils.karretel_precios import buscar_precio_karretel
 from app.utils.pagination import paginate
 
 productos_bp = Blueprint("productos", __name__)
+
+ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 
 CSV_COLUMNS = [
     "cod_producto",
@@ -119,6 +122,36 @@ def crear_producto():
     return jsonify(producto.to_dict()), 201
 
 
+@productos_bp.get("/colecciones")
+@jwt_required()
+def listar_colecciones_con_productos():
+    """Retorna todas las colecciones con sus productos agrupados."""
+    colecciones = Coleccion.query.order_by(Coleccion.nombre.asc()).all()
+
+    result = []
+    for coleccion in colecciones:
+        productos = Producto.query.filter_by(coleccion_id=coleccion.id).all()
+        result.append({
+            "id": coleccion.id,
+            "nombre": coleccion.nombre,
+            "descripcion": coleccion.descripcion,
+            "imagen_url": coleccion.imagen_url,
+            "productos": [p.to_dict() for p in productos]
+        })
+
+    sin_coleccion = Producto.query.filter(Producto.coleccion_id.is_(None)).all()
+    if sin_coleccion:
+        result.append({
+            "id": None,
+            "nombre": "Sin colección",
+            "descripcion": None,
+            "imagen_url": None,
+            "productos": [p.to_dict() for p in sin_coleccion]
+        })
+
+    return jsonify(result)
+
+
 @productos_bp.get("/<int:producto_id>")
 @jwt_required()
 def obtener_producto(producto_id):
@@ -158,6 +191,29 @@ def eliminar_producto(producto_id):
     return "", 204
 
 
+@productos_bp.post("/<int:producto_id>/upload")
+@jwt_required()
+def upload_imagen_producto(producto_id):
+    producto = Producto.query.get_or_404(producto_id)
+
+    file = request.files.get("file")
+    if not file or not file.filename:
+        return jsonify({"error": "No se envio ninguna imagen"}), 400
+
+    ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
+    if ext not in ALLOWED_IMAGE_EXTENSIONS:
+        return jsonify({"error": "Formato de imagen no soportado"}), 400
+
+    try:
+        url = upload_imagen(file, folder="productos")
+    except CloudinaryNotConfiguredError as err:
+        return jsonify({"error": str(err)}), 400
+
+    producto.imagen_url = url
+    db.session.commit()
+    return jsonify(producto.to_dict())
+
+
 @productos_bp.post("/import")
 @jwt_required()
 def importar_productos():
@@ -170,12 +226,6 @@ def importar_productos():
     except ImportError_ as err:
         return jsonify({"error": str(err)}), 400
 
-    # Alias de columnas que en los maestros reales vienen con otro nombre
-    # (ej. Maestro_Limpio.xlsx trae "Descripcion_Completa", "Stock" y
-    # "Color (Inferido visualmente)" en vez de nuestros nombres de campo).
-    # read_tabular_file ya normaliza mayusculas/espacios/acentos a
-    # snake_case; esto cubre los casos donde el nombre de la columna origen
-    # es directamente distinto al campo.
     COLUMN_ALIASES = {
         "descripcion_completa": "descripcion",
         "stock": "stock_rollos",

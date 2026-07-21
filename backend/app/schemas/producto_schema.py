@@ -22,6 +22,7 @@ class ProductoSchema(Schema):
     precio_corte = fields.Float(allow_none=True, load_default=None)
     stock_rollos = fields.Integer(allow_none=True, load_default=0)
     activo = fields.Boolean(load_default=True)
+    imagen_url = fields.String(allow_none=True, load_default=None)
     descripcion = fields.String(allow_none=True, load_default=None)
     created_at = fields.String(dump_only=True)
     updated_at = fields.String(dump_only=True)

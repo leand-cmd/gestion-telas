@@ -1,5 +1,10 @@
 import { apiClient } from "../../api/client";
-import type { ImportReport, PaginatedResponse, Producto } from "../../api/types";
+import type {
+  ColeccionConProductos,
+  ImportReport,
+  PaginatedResponse,
+  Producto,
+} from "../../api/types";
 
 export interface ProductoFilters {
   q?: string;
@@ -37,6 +42,20 @@ export async function importProductos(file: File) {
   const formData = new FormData();
   formData.append("file", file);
   const { data } = await apiClient.post<ImportReport>("/productos/import", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return data;
+}
+
+export async function fetchColeccionesConProductos() {
+  const { data } = await apiClient.get<ColeccionConProductos[]>("/productos/colecciones");
+  return data;
+}
+
+export async function uploadImagenProducto(id: number, file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+  const { data } = await apiClient.post<Producto>(`/productos/${id}/upload`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return data;

@@ -33,6 +33,7 @@ const EMPTY: ProductoInput = {
   precio_corte: null,
   stock_rollos: 0,
   activo: true,
+  imagen_url: null,
   descripcion: "",
 };
 
