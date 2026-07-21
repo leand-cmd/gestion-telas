@@ -61,6 +61,11 @@ export async function uploadImagenProducto(id: number, file: File) {
   return data;
 }
 
+export async function deleteImagenProducto(id: number) {
+  const { data } = await apiClient.delete<Producto>(`/productos/${id}/image`);
+  return data;
+}
+
 export async function exportProductos() {
   const { data } = await apiClient.get("/productos/export", { responseType: "blob" });
   const url = window.URL.createObjectURL(new Blob([data]));

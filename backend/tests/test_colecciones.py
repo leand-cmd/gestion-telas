@@ -27,6 +27,24 @@ def test_crud_coleccion(client, auth_headers):
     assert resp_lista2.get_json()["total"] == 0
 
 
+def test_eliminar_coleccion_desvincula_productos(client, auth_headers):
+    coleccion_id = client.post(
+        "/api/colecciones", json=coleccion_payload("TUL Frances"), headers=auth_headers
+    ).get_json()["id"]
+
+    producto_id = client.post(
+        "/api/productos",
+        json={"cod_producto": "TUL-9", "categoria": "Tejido plano", "coleccion_id": coleccion_id},
+        headers=auth_headers,
+    ).get_json()["id"]
+
+    resp_delete = client.delete(f"/api/colecciones/{coleccion_id}", headers=auth_headers)
+    assert resp_delete.status_code == 204
+
+    resp_producto = client.get(f"/api/productos/{producto_id}", headers=auth_headers)
+    assert resp_producto.get_json()["coleccion_id"] is None
+
+
 def test_nombre_duplicado_rechazado(client, auth_headers):
     client.post("/api/colecciones", json=coleccion_payload(), headers=auth_headers)
     resp = client.post("/api/colecciones", json=coleccion_payload(), headers=auth_headers)

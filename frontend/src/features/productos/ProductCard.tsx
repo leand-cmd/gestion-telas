@@ -1,32 +1,36 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 
+import { ConfirmDialog } from "../../components/ConfirmDialog";
 import type { Producto } from "../../api/types";
 import { colors } from "../../theme/colors";
-import { uploadImagenProducto } from "./productosApi";
+import { GestorFotosModal } from "./GestorFotosModal";
+import { deleteProducto } from "./productosApi";
 
 interface ProductCardProps {
   producto: Producto;
   onDetalle: (p: Producto) => void;
   onEditar: (p: Producto) => void;
   onUploaded: (p: Producto) => void;
+  onDeleted: (p: Producto) => void;
 }
 
-export function ProductCard({ producto: p, onDetalle, onEditar, onUploaded }: ProductCardProps) {
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+export function ProductCard({ producto: p, onDetalle, onEditar, onUploaded, onDeleted }: ProductCardProps) {
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [gestorFotosOpen, setGestorFotosOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  const handleFile = async (file: File | null) => {
-    if (!file) return;
-    setUploading(true);
+  const handleEliminar = async () => {
+    setDeleting(true);
     try {
-      const actualizado = await uploadImagenProducto(p.id, file);
-      onUploaded(actualizado);
-      toast.success("Imagen actualizada");
+      await deleteProducto(p.id);
+      toast.success("Producto eliminado");
+      onDeleted(p);
     } catch (err: any) {
-      toast.error(err?.response?.data?.error || "No se pudo subir la imagen");
+      toast.error(err?.response?.data?.error || "No se pudo eliminar el producto");
     } finally {
-      setUploading(false);
+      setDeleting(false);
+      setConfirmingDelete(false);
     }
   };
 
@@ -43,7 +47,7 @@ export function ProductCard({ producto: p, onDetalle, onEditar, onUploaded }: Pr
         {p.color_general ?? "-"}
       </div>
       <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 10 }}>{p.categoria || "-"}</div>
-      <div style={{ display: "flex", gap: 6 }}>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
         <button
           className="btn btn-secondary"
           style={{ padding: "4px 8px", fontSize: 12 }}
@@ -63,20 +67,37 @@ export function ProductCard({ producto: p, onDetalle, onEditar, onUploaded }: Pr
         <button
           className="btn btn-secondary"
           style={{ padding: "4px 8px", fontSize: 12 }}
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
-          title="Subir foto"
+          onClick={() => setConfirmingDelete(true)}
+          title="Eliminar producto"
         >
-          {uploading ? "..." : "📷"}
+          🗑️
         </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/png,image/jpeg,image/webp"
-          style={{ display: "none" }}
-          onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
-        />
+        <button
+          className="btn btn-secondary"
+          style={{ padding: "4px 8px", fontSize: 12 }}
+          onClick={() => setGestorFotosOpen(true)}
+          title="Gestor de fotos"
+        >
+          📷
+        </button>
       </div>
+
+      <ConfirmDialog
+        open={confirmingDelete}
+        title="Eliminar producto"
+        message={`¿Eliminar el producto "${p.cod_producto}"? Esta acción no se puede deshacer.`}
+        confirmLabel={deleting ? "Eliminando..." : "Eliminar"}
+        onCancel={() => setConfirmingDelete(false)}
+        onConfirm={handleEliminar}
+      />
+
+      {gestorFotosOpen && (
+        <GestorFotosModal
+          producto={p}
+          onClose={() => setGestorFotosOpen(false)}
+          onChanged={(actualizado) => onUploaded(actualizado)}
+        />
+      )}
     </div>
   );
 }

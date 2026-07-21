@@ -54,6 +54,7 @@ export function GaleriaProductos() {
           return (
             <div key={key} className="coleccion-wrapper">
               <ColeccionCard
+                coleccionId={grupo.id}
                 nombre={grupo.nombre}
                 imagenUrl={grupo.imagen_url}
                 count={grupo.productos.length}
@@ -73,6 +74,10 @@ export function GaleriaProductos() {
                     : undefined
                 }
                 onImagenClick={() => setImagenExpandida(grupo.imagen_url)}
+                onDeleted={() => {
+                  if (expandida === key) setExpandida(null);
+                  refetch();
+                }}
               />
               {expandida === key && (
                 <div className="productos-expandidos">
@@ -92,6 +97,7 @@ export function GaleriaProductos() {
                           onDetalle={setDetalleProducto}
                           onEditar={abrirEditar}
                           onUploaded={refetch}
+                          onDeleted={refetch}
                         />
                       ))}
                     </div>

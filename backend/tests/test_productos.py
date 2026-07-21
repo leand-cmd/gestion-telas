@@ -108,6 +108,22 @@ def test_listar_colecciones_con_productos(client, auth_headers):
     assert [p["cod_producto"] for p in grupo_sin_coleccion["productos"]] == ["TEL-401"]
 
 
+def test_eliminar_imagen_producto(client, auth_headers):
+    producto_id = client.post(
+        "/api/productos", json=producto_payload(cod="TEL-700"), headers=auth_headers
+    ).get_json()["id"]
+
+    client.put(
+        f"/api/productos/{producto_id}",
+        json={"imagen_url": "https://res.cloudinary.com/demo/image/upload/producto.png"},
+        headers=auth_headers,
+    )
+
+    resp = client.delete(f"/api/productos/{producto_id}/image", headers=auth_headers)
+    assert resp.status_code == 200
+    assert resp.get_json()["imagen_url"] is None
+
+
 def test_import_productos_csv_mapea_precios_karretel(client, auth_headers):
     csv_content = (
         "cod_producto,nombre_tejido,categoria,stock_rollos\n"

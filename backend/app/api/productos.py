@@ -214,6 +214,15 @@ def upload_imagen_producto(producto_id):
     return jsonify(producto.to_dict())
 
 
+@productos_bp.delete("/<int:producto_id>/image")
+@jwt_required()
+def eliminar_imagen_producto(producto_id):
+    producto = Producto.query.get_or_404(producto_id)
+    producto.imagen_url = None
+    db.session.commit()
+    return jsonify(producto.to_dict())
+
+
 @productos_bp.post("/import")
 @jwt_required()
 def importar_productos():

@@ -85,6 +85,10 @@ def actualizar_coleccion(coleccion_id):
 @jwt_required()
 def eliminar_coleccion(coleccion_id):
     coleccion = Coleccion.query.get_or_404(coleccion_id)
+
+    # Los productos de esta coleccion no se borran; quedan "Sin coleccion".
+    Producto.query.filter_by(coleccion_id=coleccion_id).update({"coleccion_id": None})
+
     db.session.delete(coleccion)
     db.session.commit()
     return "", 204

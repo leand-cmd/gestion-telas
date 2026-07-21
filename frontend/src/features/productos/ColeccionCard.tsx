@@ -1,6 +1,12 @@
+import { useState } from "react";
+import toast from "react-hot-toast";
+
+import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { colors } from "../../theme/colors";
+import { deleteColeccion } from "../colecciones/coleccionesApi";
 
 interface ColeccionCardProps {
+  coleccionId: number | null;
   nombre: string;
   imagenUrl: string | null;
   count: number;
@@ -8,9 +14,11 @@ interface ColeccionCardProps {
   onToggle: () => void;
   onEdit?: () => void;
   onImagenClick: () => void;
+  onDeleted?: () => void;
 }
 
 export function ColeccionCard({
+  coleccionId,
   nombre,
   imagenUrl,
   count,
@@ -18,7 +26,26 @@ export function ColeccionCard({
   onToggle,
   onEdit,
   onImagenClick,
+  onDeleted,
 }: ColeccionCardProps) {
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleEliminar = async () => {
+    if (coleccionId == null) return;
+    setDeleting(true);
+    try {
+      await deleteColeccion(coleccionId);
+      toast.success("Colección eliminada");
+      onDeleted?.();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || "No se pudo eliminar la colección");
+    } finally {
+      setDeleting(false);
+      setConfirmingDelete(false);
+    }
+  };
+
   return (
     <div
       className="card coleccion-card"
@@ -40,7 +67,7 @@ export function ColeccionCard({
       <div style={{ fontSize: 12, color: colors.grayNeutral, marginBottom: 8 }}>
         {count} {count === 1 ? "producto" : "productos"}
       </div>
-      <div style={{ display: "flex", gap: 8 }}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         {imagenUrl && (
           <button
             className="btn btn-secondary"
@@ -67,6 +94,19 @@ export function ColeccionCard({
             ✎
           </button>
         )}
+        {coleccionId != null && (
+          <button
+            className="btn btn-secondary"
+            style={{ padding: "4px 10px", fontSize: 13 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setConfirmingDelete(true);
+            }}
+            title="Eliminar colección"
+          >
+            🗑️
+          </button>
+        )}
         <button
           className="btn btn-secondary"
           style={{ padding: "4px 10px", fontSize: 13, marginLeft: "auto" }}
@@ -79,6 +119,19 @@ export function ColeccionCard({
           {expanded ? "−" : "+"}
         </button>
       </div>
+
+      {confirmingDelete && (
+        <div onClick={(e) => e.stopPropagation()}>
+          <ConfirmDialog
+            open
+            title="Eliminar colección"
+            message={`¿Eliminar la colección "${nombre}"? Los productos que contiene pasarán a "Sin colección".`}
+            confirmLabel={deleting ? "Eliminando..." : "Eliminar"}
+            onCancel={() => setConfirmingDelete(false)}
+            onConfirm={handleEliminar}
+          />
+        </div>
+      )}
     </div>
   );
 }
