@@ -10,9 +10,7 @@ class Producto(db.Model):
     cod_producto = db.Column(db.String(20), unique=True, nullable=False, index=True)
     proveedor = db.Column(db.String(50))
     marca = db.Column(db.String(50))
-    coleccion = db.Column(db.String(100))
     coleccion_id = db.Column(db.Integer, db.ForeignKey("colecciones.id"), nullable=True, index=True)
-    nombre_tejido = db.Column(db.String(100), nullable=False, index=True)
     cod_color = db.Column(db.String(20))
     color_general = db.Column(db.String(50))
     color_descripcion = db.Column(db.String(255))
@@ -28,10 +26,7 @@ class Producto(db.Model):
     precio_corte = db.Column(db.Float)
     stock_rollos = db.Column(db.Integer, default=0)
     activo = db.Column(db.Boolean, default=True, nullable=False, index=True)
-    url_imagen = db.Column(db.String(500))
     descripcion = db.Column(db.Text)
-    fecha_creacion = db.Column(db.Date)
-    notas = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = db.Column(
         db.DateTime,
@@ -49,9 +44,7 @@ class Producto(db.Model):
             "cod_producto": self.cod_producto,
             "proveedor": self.proveedor,
             "marca": self.marca,
-            "coleccion": self.coleccion,
             "coleccion_id": self.coleccion_id,
-            "nombre_tejido": self.nombre_tejido,
             "cod_color": self.cod_color,
             "color_general": self.color_general,
             "color_descripcion": self.color_descripcion,
@@ -67,10 +60,7 @@ class Producto(db.Model):
             "precio_corte": self.precio_corte,
             "stock_rollos": self.stock_rollos,
             "activo": self.activo,
-            "url_imagen": self.url_imagen,
             "descripcion": self.descripcion,
-            "fecha_creacion": self.fecha_creacion.isoformat() if self.fecha_creacion else None,
-            "notas": self.notas,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

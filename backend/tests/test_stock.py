@@ -1,7 +1,6 @@
 def producto_payload(sku="TEL-STK-1"):
     return {
         "cod_producto": sku,
-        "nombre_tejido": "Tela stock test",
         "categoria": "Tejido plano",
         "stock_rollos": 10,
     }

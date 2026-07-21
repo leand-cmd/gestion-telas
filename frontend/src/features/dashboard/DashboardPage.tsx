@@ -75,7 +75,7 @@ export function DashboardPage() {
             <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13 }}>
               {data.stock_bajo.map((p) => (
                 <li key={p.id}>
-                  {p.cod_producto} — {p.nombre_tejido} ({p.stock_rollos ?? 0} rollos)
+                  {p.cod_producto} — {p.descripcion ?? ""} ({p.stock_rollos ?? 0} rollos)
                 </li>
               ))}
             </ul>

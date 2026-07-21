@@ -1,14 +1,11 @@
 import { FormEvent, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
 import type { Producto } from "../../api/types";
 import { colors } from "../../theme/colors";
-import {
-  createProducto,
-  updateProducto,
-  uploadImagenProducto,
-  type ProductoInput,
-} from "./productosApi";
+import { fetchColecciones } from "../colecciones/coleccionesApi";
+import { createProducto, updateProducto, type ProductoInput } from "./productosApi";
 
 interface ProductoFormProps {
   producto: Producto | null;
@@ -19,10 +16,8 @@ interface ProductoFormProps {
 const EMPTY: ProductoInput = {
   cod_producto: "",
   marca: "",
-  coleccion: "",
   coleccion_id: null,
   cod_color: "",
-  nombre_tejido: "",
   color_general: "",
   color_descripcion: "",
   categoria: "",
@@ -37,9 +32,7 @@ const EMPTY: ProductoInput = {
   precio_corte: null,
   stock_rollos: 0,
   activo: true,
-  url_imagen: null,
   descripcion: "",
-  fecha_creacion: null,
 };
 
 export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) {
@@ -51,31 +44,17 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
     const { id, created_at, updated_at, ...rest } = producto;
     return { ...EMPTY, ...rest };
   });
-  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const handleImageUpload = async (file: File | null) => {
-    if (!file) return;
-    setUploading(true);
-    try {
-      const url = await uploadImagenProducto(file);
-      setForm((prev) => ({ ...prev, url_imagen: url }));
-      toast.success("Imagen subida");
-    } catch (err: any) {
-      toast.error(err?.response?.data?.error || "No se pudo subir la imagen");
-    } finally {
-      setUploading(false);
-    }
-  };
+  const { data: coleccionesData } = useQuery({
+    queryKey: ["colecciones"],
+    queryFn: fetchColecciones,
+  });
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!form.cod_producto.trim()) {
       toast.error("El Cod Producto es obligatorio");
-      return;
-    }
-    if (!form.nombre_tejido.trim()) {
-      toast.error("El Nombre del tejido es obligatorio");
       return;
     }
     if (!form.categoria.trim()) {
@@ -125,21 +104,24 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
             />
           </div>
           <div>
-            <label htmlFor="coleccion">Colección</label>
-            <input
-              id="coleccion"
-              value={form.coleccion ?? ""}
-              onChange={(e) => setForm({ ...form, coleccion: e.target.value })}
-            />
-          </div>
-          <div>
-            <label htmlFor="nombre_tejido">Nombre Tejido</label>
-            <input
-              id="nombre_tejido"
-              value={form.nombre_tejido}
-              onChange={(e) => setForm({ ...form, nombre_tejido: e.target.value })}
-              required
-            />
+            <label htmlFor="coleccion_id">Colección</label>
+            <select
+              id="coleccion_id"
+              value={form.coleccion_id ?? ""}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  coleccion_id: e.target.value ? Number(e.target.value) : null,
+                })
+              }
+            >
+              <option value="">Sin colección</option>
+              {(coleccionesData?.items ?? []).map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nombre}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label htmlFor="categoria">Categoría</label>
@@ -289,35 +271,6 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
               <option value="false">Inactivo</option>
             </select>
           </div>
-          <div>
-            <label htmlFor="fecha_creacion">Fecha Creación</label>
-            <input
-              id="fecha_creacion"
-              type="date"
-              value={form.fecha_creacion ?? ""}
-              onChange={(e) => setForm({ ...form, fecha_creacion: e.target.value || null })}
-            />
-          </div>
-          <div>
-            <label htmlFor="imagen">Seleccionar imagen</label>
-            <input
-              id="imagen"
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              disabled={uploading}
-              onChange={(e) => handleImageUpload(e.target.files?.[0] ?? null)}
-            />
-            {uploading && (
-              <span style={{ fontSize: 12, color: colors.grayNeutral }}>Subiendo...</span>
-            )}
-            {form.url_imagen && !uploading && (
-              <img
-                src={form.url_imagen}
-                alt="Vista previa"
-                style={{ marginTop: 8, height: 60, borderRadius: 8, objectFit: "cover" }}
-              />
-            )}
-          </div>
           <div style={{ gridColumn: "1 / -1" }}>
             <label htmlFor="descripcion">Descripción</label>
             <textarea
@@ -333,7 +286,7 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
           <button type="button" className="btn btn-secondary" onClick={onClose}>
             Cancelar
           </button>
-          <button type="submit" className="btn btn-primary" disabled={saving || uploading}>
+          <button type="submit" className="btn btn-primary" disabled={saving}>
             {saving ? "Guardando..." : "Guardar"}
           </button>
         </div>

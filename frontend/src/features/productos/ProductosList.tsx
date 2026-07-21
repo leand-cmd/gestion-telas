@@ -16,24 +16,24 @@ import {
   deleteProducto,
   exportProductos,
   fetchProductos,
-  fetchTejidos,
   importProductos,
 } from "./productosApi";
 
+const SIN_COLECCION = "Sin colección";
+
+type ColeccionId = number | "none";
 type SubViewMode = "tabla" | "galeria";
 
 interface ProductosGaleriaProps {
   columns: Column<Producto>[];
   onEditar: (p: Producto) => void;
   onDetalle: (p: Producto) => void;
-  onImagenClick: (url: string) => void;
 }
 
 function ProductosGaleria({
   items,
   onEditar,
   onDetalle,
-  onImagenClick,
 }: { items: Producto[] } & Omit<ProductosGaleriaProps, "columns">) {
   return (
     <div
@@ -63,22 +63,9 @@ function ProductosGaleria({
               🔍
             </button>
           </div>
-          <div
-            onClick={() => p.url_imagen && onImagenClick(p.url_imagen)}
-            style={{
-              width: "100%",
-              height: 140,
-              borderRadius: 16,
-              background: p.url_imagen
-                ? `url(${p.url_imagen}) center/cover`
-                : colors.gradientBackground,
-              marginBottom: 12,
-              cursor: p.url_imagen ? "zoom-in" : "default",
-            }}
-          />
           <div style={{ fontWeight: 700, fontSize: 14 }}>{p.cod_producto}</div>
           <div style={{ fontSize: 12, color: colors.grayNeutral, marginBottom: 6 }}>
-            {p.nombre_tejido}
+            {p.descripcion ?? p.composicion ?? "-"}
           </div>
           <div style={{ fontSize: 12 }}>{p.color_general ?? "-"}</div>
         </div>
@@ -87,20 +74,19 @@ function ProductosGaleria({
   );
 }
 
-function TejidoExpandido({
-  nombreTejido,
+function ColeccionExpandida({
+  coleccionId,
   columns,
   onEditar,
   onDetalle,
-  onImagenClick,
-}: { nombreTejido: string } & ProductosGaleriaProps) {
+}: { coleccionId: ColeccionId } & ProductosGaleriaProps) {
   const [page, setPage] = useState(1);
   const [subView, setSubView] = useState<SubViewMode>("galeria");
 
   const { data, isLoading } = useQuery({
-    queryKey: ["productos-tejido", nombreTejido, page, subView],
+    queryKey: ["productos-coleccion", coleccionId, page, subView],
     queryFn: () =>
-      fetchProductos({ nombre_tejido: nombreTejido, page, per_page: subView === "galeria" ? 12 : 10 }),
+      fetchProductos({ coleccion_id: coleccionId, page, per_page: subView === "galeria" ? 12 : 10 }),
   });
 
   return (
@@ -124,7 +110,7 @@ function TejidoExpandido({
           rows={data?.items ?? []}
           rowKey={(p) => p.id}
           loading={isLoading}
-          emptyMessage="Este tejido no tiene productos"
+          emptyMessage="Esta colección no tiene productos"
         />
       ) : isLoading ? (
         <div style={{ padding: 24, textAlign: "center", color: colors.grayNeutral }}>
@@ -132,15 +118,10 @@ function TejidoExpandido({
         </div>
       ) : (data?.items.length ?? 0) === 0 ? (
         <div style={{ padding: 24, textAlign: "center", color: colors.grayNeutral }}>
-          Este tejido no tiene productos
+          Esta colección no tiene productos
         </div>
       ) : (
-        <ProductosGaleria
-          items={data?.items ?? []}
-          onEditar={onEditar}
-          onDetalle={onDetalle}
-          onImagenClick={onImagenClick}
-        />
+        <ProductosGaleria items={data?.items ?? []} onEditar={onEditar} onDetalle={onDetalle} />
       )}
 
       {data && (
@@ -164,7 +145,7 @@ function ColeccionCard({
   count: number;
   expanded: boolean;
   onToggle: () => void;
-  onEdit: () => void;
+  onEdit?: () => void;
   onImagenClick: () => void;
 }) {
   return (
@@ -173,23 +154,25 @@ function ColeccionCard({
       style={{ border: expanded ? `2px solid ${colors.purplePrimary}` : undefined, position: "relative" }}
       onClick={onToggle}
     >
-      <button
-        className="btn btn-secondary"
-        style={{
-          position: "absolute",
-          top: 10,
-          right: 10,
-          padding: "4px 10px",
-          fontSize: 12,
-          zIndex: 1,
-        }}
-        onClick={(e) => {
-          e.stopPropagation();
-          onEdit();
-        }}
-      >
-        ✎ Editar
-      </button>
+      {onEdit && (
+        <button
+          className="btn btn-secondary"
+          style={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+            padding: "4px 10px",
+            fontSize: 12,
+            zIndex: 1,
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit();
+          }}
+        >
+          ✎ Editar
+        </button>
+      )}
       <div
         className="coleccion-card-imagen"
         style={{
@@ -215,8 +198,8 @@ export function ProductosList() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [view, setView] = useState<ViewMode>("tabla");
-  const [expandedTejido, setExpandedTejido] = useState<string | null>(null);
-  const [editingColeccionTejido, setEditingColeccionTejido] = useState<string | null>(null);
+  const [expandedColeccion, setExpandedColeccion] = useState<ColeccionId | null>(null);
+  const [editingColeccion, setEditingColeccion] = useState<Coleccion | "nueva" | null>(null);
   const [imagenExpandida, setImagenExpandida] = useState<string | null>(null);
   const [detalleProducto, setDetalleProducto] = useState<Producto | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -232,25 +215,15 @@ export function ProductosList() {
     enabled: view === "tabla",
   });
 
-  const { data: tejidosData } = useQuery({
-    queryKey: ["productos-tejidos"],
-    queryFn: fetchTejidos,
-    enabled: view === "galeria",
-  });
-
   const { data: coleccionesData } = useQuery({
     queryKey: ["colecciones"],
     queryFn: fetchColecciones,
   });
   const coleccionPorId = new Map((coleccionesData?.items ?? []).map((c) => [c.id, c]));
-  const coleccionPorNombreTejido = new Map<string, Coleccion>(
-    (coleccionesData?.items ?? []).map((c) => [c.nombre.trim().toLowerCase(), c])
-  );
 
   const refetch = () => {
     queryClient.invalidateQueries({ queryKey: ["productos"] });
-    queryClient.invalidateQueries({ queryKey: ["productos-tejido"] });
-    queryClient.invalidateQueries({ queryKey: ["productos-tejidos"] });
+    queryClient.invalidateQueries({ queryKey: ["productos-coleccion"] });
     queryClient.invalidateQueries({ queryKey: ["colecciones"] });
   };
 
@@ -266,14 +239,10 @@ export function ProductosList() {
     { header: "Marca", render: (p) => p.marca ?? "-" },
     {
       header: "Colección",
-      render: (p) =>
-        (p.coleccion_id != null ? coleccionPorId.get(p.coleccion_id)?.nombre : null) ??
-        p.coleccion ??
-        "-",
+      render: (p) => (p.coleccion_id != null ? coleccionPorId.get(p.coleccion_id)?.nombre : null) ?? "-",
       truncate: true,
       minWidth: 140,
     },
-    { header: "Nombre Tejido", render: (p) => p.nombre_tejido, truncate: true, minWidth: 160 },
     { header: "Cod Color", render: (p) => p.cod_color ?? "-" },
     {
       header: "Color Inferido",
@@ -306,7 +275,6 @@ export function ProductosList() {
         </span>
       ),
     },
-    { header: "Fecha Creación", render: (p) => p.fecha_creacion ?? "-" },
     {
       header: "Acciones",
       render: (p) => (
@@ -320,6 +288,15 @@ export function ProductosList() {
         </div>
       ),
     },
+  ];
+
+  const tarjetas: { id: ColeccionId; coleccion: Coleccion | null; count: number }[] = [
+    ...(coleccionesData?.items ?? []).map((c) => ({
+      id: c.id as ColeccionId,
+      coleccion: c,
+      count: c.productos_count ?? 0,
+    })),
+    { id: "none" as ColeccionId, coleccion: null, count: coleccionesData?.sin_coleccion_count ?? 0 },
   ];
 
   return (
@@ -337,7 +314,7 @@ export function ProductosList() {
         <h2 style={{ margin: 0, color: colors.purpleDark }}>Productos</h2>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <input
-            placeholder="Buscar por Cod Producto, tejido o color..."
+            placeholder="Buscar por Cod Producto o color..."
             value={q}
             onChange={(e) => {
               setQ(e.target.value);
@@ -392,36 +369,29 @@ export function ProductosList() {
         </div>
       ) : (
         <div className="colecciones-grid">
-          {(tejidosData ?? []).map(({ nombre_tejido, count }) => {
-            const imagenUrl =
-              coleccionPorNombreTejido.get(nombre_tejido.trim().toLowerCase())?.imagen_url ?? null;
-            return (
-              <div key={nombre_tejido} className="coleccion-wrapper">
-                <ColeccionCard
-                  nombre={nombre_tejido}
-                  imagenUrl={imagenUrl}
-                  count={count}
-                  expanded={expandedTejido === nombre_tejido}
-                  onToggle={() =>
-                    setExpandedTejido(expandedTejido === nombre_tejido ? null : nombre_tejido)
-                  }
-                  onEdit={() => setEditingColeccionTejido(nombre_tejido)}
-                  onImagenClick={() => setImagenExpandida(imagenUrl)}
-                />
-                {expandedTejido === nombre_tejido && (
-                  <div className="productos-expandidos">
-                    <TejidoExpandido
-                      nombreTejido={nombre_tejido}
-                      columns={columns}
-                      onEditar={abrirEditar}
-                      onDetalle={setDetalleProducto}
-                      onImagenClick={setImagenExpandida}
-                    />
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          {tarjetas.map(({ id, coleccion, count }) => (
+            <div key={id} className="coleccion-wrapper">
+              <ColeccionCard
+                nombre={coleccion?.nombre ?? SIN_COLECCION}
+                imagenUrl={coleccion?.imagen_url ?? null}
+                count={count}
+                expanded={expandedColeccion === id}
+                onToggle={() => setExpandedColeccion(expandedColeccion === id ? null : id)}
+                onEdit={coleccion ? () => setEditingColeccion(coleccion) : undefined}
+                onImagenClick={() => setImagenExpandida(coleccion?.imagen_url ?? null)}
+              />
+              {expandedColeccion === id && (
+                <div className="productos-expandidos">
+                  <ColeccionExpandida
+                    coleccionId={id}
+                    columns={columns}
+                    onEditar={abrirEditar}
+                    onDetalle={setDetalleProducto}
+                  />
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
 
@@ -465,13 +435,12 @@ export function ProductosList() {
         />
       )}
 
-      {editingColeccionTejido && (
+      {editingColeccion && (
         <ColeccionForm
-          coleccion={coleccionPorNombreTejido.get(editingColeccionTejido.trim().toLowerCase()) ?? null}
-          nombreFijo={editingColeccionTejido}
-          onClose={() => setEditingColeccionTejido(null)}
+          coleccion={editingColeccion === "nueva" ? null : editingColeccion}
+          onClose={() => setEditingColeccion(null)}
           onSaved={() => {
-            setEditingColeccionTejido(null);
+            setEditingColeccion(null);
             queryClient.invalidateQueries({ queryKey: ["colecciones"] });
           }}
         />
@@ -486,7 +455,6 @@ export function ProductosList() {
             setDetalleProducto(null);
             abrirEditar(p);
           }}
-          onImagenClick={() => setImagenExpandida(detalleProducto.url_imagen)}
         />
       )}
 

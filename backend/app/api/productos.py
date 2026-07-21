@@ -10,7 +10,6 @@ from app.extensions import db
 from app.models.coleccion import Coleccion
 from app.models.producto import Producto
 from app.schemas.producto_schema import producto_schema, producto_update_schema
-from app.utils.cloudinary_upload import CloudinaryNotConfiguredError, upload_imagen
 from app.utils.importers import ImportError_, build_import_report, read_tabular_file
 from app.utils.karretel_precios import buscar_precio_karretel
 from app.utils.pagination import paginate
@@ -21,8 +20,7 @@ CSV_COLUMNS = [
     "cod_producto",
     "proveedor",
     "marca",
-    "coleccion",
-    "nombre_tejido",
+    "coleccion_id",
     "cod_color",
     "color_general",
     "color_descripcion",
@@ -38,11 +36,24 @@ CSV_COLUMNS = [
     "precio_corte",
     "stock_rollos",
     "activo",
-    "fecha_creacion",
-    "notas",
 ]
 
-ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
+
+def _resolver_coleccion_id(nombre_tejido: str) -> int | None:
+    """Busca una Coleccion por nombre (case-insensitive); si no existe, la
+    crea (sin imagen todavia) para que el producto quede enganchado por FK."""
+    nombre_tejido = (nombre_tejido or "").strip()
+    if not nombre_tejido:
+        return None
+
+    existente = Coleccion.query.filter(func.lower(Coleccion.nombre) == nombre_tejido.lower()).first()
+    if existente:
+        return existente.id
+
+    nueva = Coleccion(nombre=nombre_tejido)
+    db.session.add(nueva)
+    db.session.flush()
+    return nueva.id
 
 
 @productos_bp.get("")
@@ -56,7 +67,6 @@ def listar_productos():
         query = query.filter(
             or_(
                 Producto.cod_producto.ilike(like),
-                Producto.nombre_tejido.ilike(like),
                 Producto.color_general.ilike(like),
             )
         )
@@ -75,10 +85,6 @@ def listar_productos():
     elif coleccion_id is not None and coleccion_id != "":
         query = query.filter(Producto.coleccion_id == int(coleccion_id))
 
-    nombre_tejido = request.args.get("nombre_tejido")
-    if nombre_tejido:
-        query = query.filter(Producto.nombre_tejido == nombre_tejido)
-
     query = query.order_by(Producto.cod_producto.asc())
 
     result = paginate(query)
@@ -91,18 +97,6 @@ def listar_productos():
             "pages": result["pages"],
         }
     )
-
-
-@productos_bp.get("/tejidos")
-@jwt_required()
-def listar_tejidos():
-    filas = (
-        db.session.query(Producto.nombre_tejido, func.count(Producto.id))
-        .group_by(Producto.nombre_tejido)
-        .order_by(Producto.nombre_tejido.asc())
-        .all()
-    )
-    return jsonify([{"nombre_tejido": nombre, "count": count} for nombre, count in filas])
 
 
 @productos_bp.post("")
@@ -164,25 +158,6 @@ def eliminar_producto(producto_id):
     return "", 204
 
 
-@productos_bp.post("/upload")
-@jwt_required()
-def upload_imagen_producto():
-    file = request.files.get("file")
-    if not file or not file.filename:
-        return jsonify({"error": "No se envio ninguna imagen"}), 400
-
-    ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
-    if ext not in ALLOWED_IMAGE_EXTENSIONS:
-        return jsonify({"error": "Formato de imagen no soportado"}), 400
-
-    try:
-        url = upload_imagen(file)
-    except CloudinaryNotConfiguredError as err:
-        return jsonify({"error": str(err)}), 400
-
-    return jsonify({"url": url})
-
-
 @productos_bp.post("/import")
 @jwt_required()
 def importar_productos():
@@ -230,9 +205,8 @@ def importar_productos():
                     "cod_producto": (row.get("cod_producto") or "").strip(),
                     "proveedor": row.get("proveedor") or None,
                     "marca": row.get("marca") or None,
-                    "coleccion": row.get("coleccion") or None,
+                    "coleccion_id": _resolver_coleccion_id(nombre_tejido),
                     "cod_color": row.get("cod_color") or None,
-                    "nombre_tejido": nombre_tejido,
                     "color_general": row.get("color_general") or None,
                     "color_descripcion": row.get("color_descripcion") or None,
                     "categoria": (row.get("categoria") or "").strip(),
@@ -247,8 +221,6 @@ def importar_productos():
                     "precio_corte": _precio("precio_corte"),
                     "stock_rollos": row.get("stock_rollos") or 0,
                     "descripcion": row.get("descripcion") or None,
-                    "fecha_creacion": row.get("fecha_creacion") or None,
-                    "notas": row.get("notas") or None,
                     "activo": (row.get("activo", "true") or "true").lower() != "false",
                 }
             )

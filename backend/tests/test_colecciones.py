@@ -46,7 +46,6 @@ def test_listar_colecciones_incluye_conteo_de_productos(client, auth_headers):
     def producto_payload(cod):
         return {
             "cod_producto": cod,
-            "nombre_tejido": "Tul",
             "categoria": "Tejido plano",
             "coleccion_id": coleccion_id,
         }
@@ -55,7 +54,7 @@ def test_listar_colecciones_incluye_conteo_de_productos(client, auth_headers):
     client.post("/api/productos", json=producto_payload("TUL-2"), headers=auth_headers)
     client.post(
         "/api/productos",
-        json={"cod_producto": "SIN-1", "nombre_tejido": "Otro", "categoria": "Tejido plano"},
+        json={"cod_producto": "SIN-1", "categoria": "Tejido plano"},
         headers=auth_headers,
     )
 

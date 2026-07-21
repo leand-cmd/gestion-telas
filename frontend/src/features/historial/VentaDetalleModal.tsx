@@ -73,7 +73,7 @@ export function VentaDetalleModal({ venta, onClose }: VentaDetalleModalProps) {
                   {(pedido?.detalles ?? []).map((d) => (
                     <tr key={d.id}>
                       <td>{d.producto?.cod_producto ?? "-"}</td>
-                      <td>{d.producto?.nombre_tejido ?? "-"}</td>
+                      <td>{d.producto?.descripcion ?? "-"}</td>
                       <td>{d.cantidad}</td>
                       <td>₲ {(d.subtotal ?? 0).toLocaleString("es-PY")}</td>
                     </tr>

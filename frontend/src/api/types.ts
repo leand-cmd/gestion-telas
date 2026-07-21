@@ -43,10 +43,8 @@ export interface Producto {
   id: number;
   cod_producto: string;
   marca: string | null;
-  coleccion: string | null;
   coleccion_id: number | null;
   cod_color: string | null;
-  nombre_tejido: string;
   color_general: string | null;
   color_descripcion: string | null;
   categoria: string;
@@ -61,9 +59,7 @@ export interface Producto {
   precio_corte: number | null;
   stock_rollos: number | null;
   activo: boolean;
-  url_imagen: string | null;
   descripcion: string | null;
-  fecha_creacion: string | null;
   created_at: string;
   updated_at: string;
 }

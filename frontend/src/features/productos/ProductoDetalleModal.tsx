@@ -5,7 +5,6 @@ interface ProductoDetalleModalProps {
   producto: Producto;
   onClose: () => void;
   onEditar: () => void;
-  onImagenClick: () => void;
 }
 
 function Campo({ label, value }: { label: string; value: string | number | null | undefined }) {
@@ -20,12 +19,7 @@ function Campo({ label, value }: { label: string; value: string | number | null 
   );
 }
 
-export function ProductoDetalleModal({
-  producto: p,
-  onClose,
-  onEditar,
-  onImagenClick,
-}: ProductoDetalleModalProps) {
+export function ProductoDetalleModal({ producto: p, onClose, onEditar }: ProductoDetalleModalProps) {
   const formatPrecio = (v: number | null) => (v != null ? `₲ ${v.toLocaleString("es-PY")}` : null);
 
   return (
@@ -38,21 +32,8 @@ export function ProductoDetalleModal({
           </span>
         </div>
 
-        <div
-          onClick={() => p.url_imagen && onImagenClick()}
-          style={{
-            width: "100%",
-            height: 240,
-            borderRadius: 16,
-            background: p.url_imagen ? `url(${p.url_imagen}) center/cover` : colors.gradientBackground,
-            cursor: p.url_imagen ? "zoom-in" : "default",
-          }}
-        />
-
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          <Campo label="Nombre Tejido" value={p.nombre_tejido} />
           <Campo label="Marca" value={p.marca} />
-          <Campo label="Colección" value={p.coleccion} />
           <Campo label="Categoría" value={p.categoria} />
           <Campo label="Sub Categoría" value={p.sub_categoria} />
           <Campo label="Tipo Diseño" value={p.tipo_diseno} />
@@ -67,7 +48,6 @@ export function ProductoDetalleModal({
           <Campo label="Precio 1/2 Rollo" value={formatPrecio(p.precio_media_rollo)} />
           <Campo label="Precio Corte" value={formatPrecio(p.precio_corte)} />
           <Campo label="Stock" value={p.stock_rollos != null ? `${p.stock_rollos} rollos` : null} />
-          <Campo label="Fecha Creación" value={p.fecha_creacion} />
           <div style={{ gridColumn: "1 / -1" }}>
             <Campo label="Descripción" value={p.descripcion} />
           </div>

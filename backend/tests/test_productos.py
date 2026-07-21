@@ -6,9 +6,7 @@ def producto_payload(cod="TEL-001"):
         "cod_producto": cod,
         "proveedor": "KARRETEL",
         "marca": "KARRETEL",
-        "coleccion": "Tejidos de Coleccion",
         "cod_color": "AZ01",
-        "nombre_tejido": "Boston",
         "color_general": "Azul",
         "color_descripcion": "Azul marino",
         "categoria": "Tejido plano",
@@ -22,8 +20,7 @@ def producto_payload(cod="TEL-001"):
         "precio_media_rollo": None,
         "precio_corte": 16680,
         "stock_rollos": 100,
-        "fecha_creacion": "2026-07-17",
-        "notas": None,
+        "descripcion": "Boston",
     }
 
 
@@ -56,39 +53,14 @@ def test_search_productos(client, auth_headers):
     client.post("/api/productos", json=producto_payload(cod="TEL-100"), headers=auth_headers)
     client.post(
         "/api/productos",
-        json=producto_payload(cod="TEL-200") | {"nombre_tejido": "Marrakesh Print"},
+        json=producto_payload(cod="TEL-200") | {"color_general": "Verde"},
         headers=auth_headers,
     )
 
-    resp = client.get("/api/productos?q=Marrakesh", headers=auth_headers)
+    resp = client.get("/api/productos?q=TEL-200", headers=auth_headers)
     data = resp.get_json()
     assert data["total"] == 1
     assert data["items"][0]["cod_producto"] == "TEL-200"
-
-
-def test_listar_tejidos_agrupa_por_nombre_tejido(client, auth_headers):
-    client.post("/api/productos", json=producto_payload(cod="TEL-400"), headers=auth_headers)
-    client.post(
-        "/api/productos",
-        json=producto_payload(cod="TEL-401") | {"nombre_tejido": "Boston"},
-        headers=auth_headers,
-    )
-    client.post(
-        "/api/productos",
-        json=producto_payload(cod="TEL-402") | {"nombre_tejido": "Tull Frances"},
-        headers=auth_headers,
-    )
-
-    resp = client.get("/api/productos/tejidos", headers=auth_headers)
-    assert resp.status_code == 200
-    tejidos = {t["nombre_tejido"]: t["count"] for t in resp.get_json()}
-    assert tejidos["Boston"] == 2
-    assert tejidos["Tull Frances"] == 1
-
-    resp_filtro = client.get("/api/productos?nombre_tejido=Tull Frances", headers=auth_headers)
-    data = resp_filtro.get_json()
-    assert data["total"] == 1
-    assert data["items"][0]["cod_producto"] == "TEL-402"
 
 
 def test_asignar_coleccion_a_producto(client, auth_headers):
@@ -134,3 +106,37 @@ def test_import_productos_csv_mapea_precios_karretel(client, auth_headers):
     productos = client.get("/api/productos?q=TEL-500", headers=auth_headers).get_json()["items"]
     assert productos[0]["precio_rollo"] == 11300
     assert productos[0]["precio_corte"] == 13560
+
+
+def test_import_crea_coleccion_automaticamente_por_nombre_tejido(client, auth_headers):
+    csv_content = (
+        "cod_producto,nombre_tejido,categoria,stock_rollos\n"
+        "TEL-600,Tull Frances,Tejido plano,10\n"
+        "TEL-601,Tull Frances,Tejido plano,5\n"
+        "TEL-602,Boston,Tejido plano,3\n"
+    )
+    data = {"file": (io.BytesIO(csv_content.encode()), "productos.csv")}
+    resp = client.post(
+        "/api/productos/import",
+        data=data,
+        headers=auth_headers,
+        content_type="multipart/form-data",
+    )
+    assert resp.status_code == 200
+    assert resp.get_json()["insertados"] == 3
+
+    colecciones = client.get("/api/colecciones", headers=auth_headers).get_json()
+    nombres = {c["nombre"]: c["productos_count"] for c in colecciones["items"]}
+    assert nombres["Tull Frances"] == 2
+    assert nombres["Boston"] == 1
+
+    # Reimportar con el mismo nombre_tejido no debe duplicar la coleccion
+    resp2 = client.post(
+        "/api/productos/import",
+        data={"file": (io.BytesIO(csv_content.encode()), "productos.csv")},
+        headers=auth_headers,
+        content_type="multipart/form-data",
+    )
+    assert resp2.get_json()["actualizados"] == 3
+    colecciones2 = client.get("/api/colecciones", headers=auth_headers).get_json()
+    assert colecciones2["total"] == 2

@@ -24,7 +24,7 @@ export function StockList() {
 
   const columns: Column<StockItem>[] = [
     { header: "Cod Producto", render: (p) => p.cod_producto },
-    { header: "Tejido", render: (p) => p.nombre_tejido, truncate: true },
+    { header: "Descripción", render: (p) => p.descripcion ?? "-", truncate: true },
     { header: "Stock (rollos)", render: (p) => p.stock_rollos ?? 0 },
     {
       header: "Estado",

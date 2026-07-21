@@ -58,14 +58,14 @@ def generate_pedido_pdf(pedido) -> bytes:
     elements.append(info_table)
     elements.append(Spacer(1, 16))
 
-    detalle_header = ["Cod Producto", "Tejido", "Cantidad", "Valor Unit.", "Subtotal"]
+    detalle_header = ["Cod Producto", "Descripción", "Cantidad", "Valor Unit.", "Subtotal"]
     detalle_rows = [detalle_header]
     for d in pedido.detalles:
         producto = d.producto
         detalle_rows.append(
             [
                 producto.cod_producto if producto else "-",
-                producto.nombre_tejido if producto else "-",
+                producto.descripcion if producto else "-",
                 str(d.cantidad),
                 f"{float(d.valor_unitario or 0):,.2f}",
                 f"{float(d.subtotal or 0):,.2f}",

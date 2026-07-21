@@ -20,7 +20,7 @@ def listar_stock():
     q = request.args.get("q", "").strip()
     if q:
         like = f"%{q}%"
-        query = query.filter(or_(Producto.cod_producto.ilike(like), Producto.nombre_tejido.ilike(like)))
+        query = query.filter(or_(Producto.cod_producto.ilike(like), Producto.descripcion.ilike(like)))
 
     query = query.order_by(Producto.cod_producto.asc())
 
