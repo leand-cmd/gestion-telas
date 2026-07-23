@@ -197,67 +197,79 @@ export function PedidoForm({ pedido, onClose, onSaved }: PedidoFormProps) {
             </button>
           </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "2fr 90px 130px 130px 90px",
-              gap: "4px 8px",
-              fontSize: 12,
-              fontWeight: 700,
-              color: colors.grayNeutral,
-              marginTop: 8,
-            }}
-          >
-            <div>Producto</div>
-            <div>Cantidad</div>
-            <div>Valor unitario</div>
-            <div>Subtotal</div>
-            <div></div>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 6 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 8 }}>
             {lineas.map((l) => {
               const producto = productos.find((p) => p.id === l.producto_id);
               const valor = l.valor_unitario ?? producto?.precio_rollo ?? 0;
               return (
                 <div
                   key={l.key}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "2fr 90px 130px 130px 90px",
-                    gap: 8,
-                    alignItems: "start",
-                  }}
+                  className="card"
+                  style={{ padding: 12, background: "rgba(108,93,209,0.04)" }}
                 >
+                  <label style={{ fontSize: 11, fontWeight: 700, color: colors.grayNeutral }}>
+                    Producto
+                  </label>
                   <ProductoSearchSelect
                     productos={productos}
                     coleccionPorId={coleccionPorId}
                     value={l.producto_id}
                     onChange={(producto_id) => actualizarLinea(l.key, { producto_id })}
                   />
-                  <input
-                    type="number"
-                    min={1}
-                    value={l.cantidad}
-                    onChange={(e) => actualizarLinea(l.key, { cantidad: Number(e.target.value) })}
-                  />
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={valor}
-                    onChange={(e) =>
-                      actualizarLinea(l.key, { valor_unitario: Number(e.target.value) })
-                    }
-                  />
-                  <div style={{ paddingTop: 10 }}>₲ {(valor * l.cantidad).toLocaleString("es-PY")}</div>
-                  <button
-                    type="button"
-                    className="btn btn-danger"
-                    disabled={lineas.length === 1}
-                    onClick={() => setLineas((prev) => prev.filter((x) => x.key !== l.key))}
+
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 10,
+                      marginTop: 10,
+                      alignItems: "flex-end",
+                    }}
                   >
-                    Quitar
-                  </button>
+                    <div style={{ width: 100 }}>
+                      <label style={{ fontSize: 11, fontWeight: 700, color: colors.grayNeutral }}>
+                        Cantidad
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        value={l.cantidad}
+                        onChange={(e) =>
+                          actualizarLinea(l.key, { cantidad: Number(e.target.value) })
+                        }
+                      />
+                    </div>
+                    <div style={{ width: 130 }}>
+                      <label style={{ fontSize: 11, fontWeight: 700, color: colors.grayNeutral }}>
+                        Valor unitario
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={valor}
+                        onChange={(e) =>
+                          actualizarLinea(l.key, { valor_unitario: Number(e.target.value) })
+                        }
+                      />
+                    </div>
+                    <div style={{ width: 130 }}>
+                      <label style={{ fontSize: 11, fontWeight: 700, color: colors.grayNeutral }}>
+                        Subtotal
+                      </label>
+                      <div style={{ padding: "10px 0", fontWeight: 600 }}>
+                        ₲ {(valor * l.cantidad).toLocaleString("es-PY")}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn-danger"
+                      disabled={lineas.length === 1}
+                      onClick={() => setLineas((prev) => prev.filter((x) => x.key !== l.key))}
+                      style={{ marginLeft: "auto" }}
+                    >
+                      Quitar
+                    </button>
+                  </div>
                 </div>
               );
             })}

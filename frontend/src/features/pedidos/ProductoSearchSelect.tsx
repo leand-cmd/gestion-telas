@@ -47,6 +47,7 @@ export function ProductoSearchSelect({
       (p) =>
         p.cod_producto.toLowerCase().includes(q) ||
         nombreColeccion(p).toLowerCase().includes(q) ||
+        p.categoria.toLowerCase().includes(q) ||
         (p.color_general ?? "").toLowerCase().includes(q) ||
         (p.descripcion ?? "").toLowerCase().includes(q)
     );
@@ -65,7 +66,7 @@ export function ProductoSearchSelect({
     <div>
       <input
         value={query}
-        placeholder="Cod producto, colección, color..."
+        placeholder="Cod producto, colección, categoría, color..."
         onChange={(e) => {
           setQuery(e.target.value);
           setOpen(true);
@@ -102,7 +103,7 @@ export function ProductoSearchSelect({
               <div>
                 <div style={{ fontWeight: 700, fontSize: 15 }}>{highlight(p.cod_producto, q)}</div>
                 <div style={{ fontSize: 12, color: colors.grayNeutral }}>
-                  {nombreColeccion(p)} · {p.color_general ?? "-"}
+                  {nombreColeccion(p)} · {p.categoria} · {p.color_general ?? "-"}
                 </div>
               </div>
               <div style={{ fontWeight: 600, fontSize: 13, whiteSpace: "nowrap" }}>
