@@ -10,6 +10,8 @@ import { fetchProductos } from "../productos/productosApi";
 import { createPedido, updatePedido, type PedidoDetalleInput, type PedidoInput } from "./pedidosApi";
 import { ProductoSearchSelect } from "./ProductoSearchSelect";
 
+const TIPOS_COMPRA = ["Contado", "Crédito", "Diferido", "Cheque"];
+
 interface PedidoFormProps {
   pedido: Pedido | null;
   onClose: () => void;
@@ -141,11 +143,18 @@ export function PedidoForm({ pedido, onClose, onSaved }: PedidoFormProps) {
           </div>
           <div>
             <label htmlFor="tipo_compra">Tipo de compra</label>
-            <input
+            <select
               id="tipo_compra"
               value={tipoCompra ?? ""}
               onChange={(e) => setTipoCompra(e.target.value)}
-            />
+            >
+              <option value="">Seleccionar...</option>
+              {TIPOS_COMPRA.map((tipo) => (
+                <option key={tipo} value={tipo}>
+                  {tipo}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label htmlFor="fecha_pedido">Fecha del pedido</label>
