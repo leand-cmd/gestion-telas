@@ -5,8 +5,10 @@ import toast from "react-hot-toast";
 import type { Pedido } from "../../api/types";
 import { colors } from "../../theme/colors";
 import { fetchClientes } from "../clientes/clientesApi";
+import { fetchColecciones } from "../colecciones/coleccionesApi";
 import { fetchProductos } from "../productos/productosApi";
 import { createPedido, updatePedido, type PedidoDetalleInput, type PedidoInput } from "./pedidosApi";
+import { ProductoSearchSelect } from "./ProductoSearchSelect";
 
 interface PedidoFormProps {
   pedido: Pedido | null;
@@ -48,8 +50,13 @@ export function PedidoForm({ pedido, onClose, onSaved }: PedidoFormProps) {
     queryKey: ["productos-select"],
     queryFn: () => fetchProductos({ page: 1, per_page: 200 }),
   });
+  const { data: coleccionesData } = useQuery({
+    queryKey: ["colecciones"],
+    queryFn: fetchColecciones,
+  });
 
   const productos = productosData?.items ?? [];
+  const coleccionPorId = new Map((coleccionesData?.items ?? []).map((c) => [c.id, c]));
 
   const total = useMemo(() => {
     return lineas.reduce((acc, l) => {
@@ -181,78 +188,70 @@ export function PedidoForm({ pedido, onClose, onSaved }: PedidoFormProps) {
             </button>
           </div>
 
-          <div className="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>Producto</th>
-                <th>Cantidad</th>
-                <th>Valor unitario</th>
-                <th>Subtotal</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {lineas.map((l) => {
-                const producto = productos.find((p) => p.id === l.producto_id);
-                const valor = l.valor_unitario ?? producto?.precio_rollo ?? 0;
-                return (
-                  <tr key={l.key}>
-                    <td>
-                      <select
-                        value={l.producto_id}
-                        onChange={(e) =>
-                          actualizarLinea(l.key, { producto_id: Number(e.target.value) })
-                        }
-                      >
-                        <option value={0}>Seleccionar...</option>
-                        {productos.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.cod_producto} - {p.descripcion ?? ""}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td>
-                      <input
-                        type="number"
-                        min={1}
-                        style={{ width: 80 }}
-                        value={l.cantidad}
-                        onChange={(e) =>
-                          actualizarLinea(l.key, { cantidad: Number(e.target.value) })
-                        }
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="number"
-                        step="0.01"
-                        style={{ width: 110 }}
-                        value={valor}
-                        onChange={(e) =>
-                          actualizarLinea(l.key, { valor_unitario: Number(e.target.value) })
-                        }
-                      />
-                    </td>
-                    <td>₲ {(valor * l.cantidad).toLocaleString("es-PY")}</td>
-                    <td>
-                      <button
-                        type="button"
-                        className="btn btn-danger"
-                        disabled={lineas.length === 1}
-                        onClick={() =>
-                          setLineas((prev) => prev.filter((x) => x.key !== l.key))
-                        }
-                      >
-                        Quitar
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "2fr 90px 130px 130px 90px",
+              gap: "4px 8px",
+              fontSize: 12,
+              fontWeight: 700,
+              color: colors.grayNeutral,
+              marginTop: 8,
+            }}
+          >
+            <div>Producto</div>
+            <div>Cantidad</div>
+            <div>Valor unitario</div>
+            <div>Subtotal</div>
+            <div></div>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 6 }}>
+            {lineas.map((l) => {
+              const producto = productos.find((p) => p.id === l.producto_id);
+              const valor = l.valor_unitario ?? producto?.precio_rollo ?? 0;
+              return (
+                <div
+                  key={l.key}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "2fr 90px 130px 130px 90px",
+                    gap: 8,
+                    alignItems: "start",
+                  }}
+                >
+                  <ProductoSearchSelect
+                    productos={productos}
+                    coleccionPorId={coleccionPorId}
+                    value={l.producto_id}
+                    onChange={(producto_id) => actualizarLinea(l.key, { producto_id })}
+                  />
+                  <input
+                    type="number"
+                    min={1}
+                    value={l.cantidad}
+                    onChange={(e) => actualizarLinea(l.key, { cantidad: Number(e.target.value) })}
+                  />
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={valor}
+                    onChange={(e) =>
+                      actualizarLinea(l.key, { valor_unitario: Number(e.target.value) })
+                    }
+                  />
+                  <div style={{ paddingTop: 10 }}>₲ {(valor * l.cantidad).toLocaleString("es-PY")}</div>
+                  <button
+                    type="button"
+                    className="btn btn-danger"
+                    disabled={lineas.length === 1}
+                    onClick={() => setLineas((prev) => prev.filter((x) => x.key !== l.key))}
+                  >
+                    Quitar
+                  </button>
+                </div>
+              );
+            })}
           </div>
 
           <div style={{ textAlign: "right", fontWeight: 700, marginTop: 8, color: colors.purpleDark }}>
