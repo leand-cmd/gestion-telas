@@ -2,13 +2,13 @@ import { FormEvent, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
-import type { Pedido } from "../../api/types";
+import type { Pedido, Producto } from "../../api/types";
 import { colors } from "../../theme/colors";
 import { fetchClientes } from "../clientes/clientesApi";
 import { fetchColecciones } from "../colecciones/coleccionesApi";
 import { fetchProductos } from "../productos/productosApi";
 import { createPedido, updatePedido, type PedidoDetalleInput, type PedidoInput } from "./pedidosApi";
-import { ProductoSearchSelect } from "./ProductoSearchSelect";
+import { ProductoAddBar } from "./ProductoAddBar";
 
 const TIPOS_COMPRA = ["Contado", "Crédito", "Diferido", "Cheque"];
 
@@ -22,8 +22,8 @@ interface LineaForm extends PedidoDetalleInput {
   key: string;
 }
 
-function lineaVacia(): LineaForm {
-  return { key: crypto.randomUUID(), producto_id: 0, cantidad: 1, valor_unitario: null };
+function lineaDesdeProducto(producto: Producto): LineaForm {
+  return { key: crypto.randomUUID(), producto_id: producto.id, cantidad: 1, valor_unitario: null };
 }
 
 export function PedidoForm({ pedido, onClose, onSaved }: PedidoFormProps) {
@@ -40,7 +40,7 @@ export function PedidoForm({ pedido, onClose, onSaved }: PedidoFormProps) {
           cantidad: d.cantidad,
           valor_unitario: d.valor_unitario,
         }))
-      : [lineaVacia()]
+      : []
   );
   const [saving, setSaving] = useState(false);
 
@@ -186,94 +186,99 @@ export function PedidoForm({ pedido, onClose, onSaved }: PedidoFormProps) {
         </div>
 
         <div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <label>Detalle del pedido</label>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => setLineas((prev) => [...prev, lineaVacia()])}
+          <label>Detalle del pedido</label>
+
+          <div style={{ marginTop: 8 }}>
+            <ProductoAddBar
+              productos={productos}
+              coleccionPorId={coleccionPorId}
+              onAdd={(producto) => setLineas((prev) => [...prev, lineaDesdeProducto(producto)])}
+            />
+          </div>
+
+          {lineas.length === 0 ? (
+            <div
+              style={{
+                padding: 24,
+                textAlign: "center",
+                color: colors.grayNeutral,
+                fontSize: 13,
+              }}
             >
-              + Agregar producto
-            </button>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 8 }}>
-            {lineas.map((l) => {
-              const producto = productos.find((p) => p.id === l.producto_id);
-              const valor = l.valor_unitario ?? producto?.precio_rollo ?? 0;
-              return (
-                <div
-                  key={l.key}
-                  className="card"
-                  style={{ padding: 12, background: "rgba(108,93,209,0.04)" }}
-                >
-                  <label style={{ fontSize: 11, fontWeight: 700, color: colors.grayNeutral }}>
-                    Producto
-                  </label>
-                  <ProductoSearchSelect
-                    productos={productos}
-                    coleccionPorId={coleccionPorId}
-                    value={l.producto_id}
-                    onChange={(producto_id) => actualizarLinea(l.key, { producto_id })}
-                  />
-
+              Buscá un producto arriba para agregarlo al pedido
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
+              {lineas.map((l) => {
+                const producto = productos.find((p) => p.id === l.producto_id);
+                const valor = l.valor_unitario ?? producto?.precio_rollo ?? 0;
+                return (
                   <div
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: 10,
-                      marginTop: 10,
-                      alignItems: "flex-end",
-                    }}
+                    key={l.key}
+                    className="card"
+                    style={{ padding: 12, background: "rgba(108,93,209,0.04)" }}
                   >
-                    <div style={{ width: 100 }}>
-                      <label style={{ fontSize: 11, fontWeight: 700, color: colors.grayNeutral }}>
-                        Cantidad
-                      </label>
-                      <input
-                        type="number"
-                        min={1}
-                        value={l.cantidad}
-                        onChange={(e) =>
-                          actualizarLinea(l.key, { cantidad: Number(e.target.value) })
-                        }
-                      />
+                    <div style={{ fontWeight: 700 }}>{producto?.cod_producto ?? "Producto"}</div>
+                    <div style={{ fontSize: 12, color: colors.grayNeutral, marginBottom: 8 }}>
+                      {producto?.color_general ?? "-"}
                     </div>
-                    <div style={{ width: 130 }}>
-                      <label style={{ fontSize: 11, fontWeight: 700, color: colors.grayNeutral }}>
-                        Valor unitario
-                      </label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={valor}
-                        onChange={(e) =>
-                          actualizarLinea(l.key, { valor_unitario: Number(e.target.value) })
-                        }
-                      />
-                    </div>
-                    <div style={{ width: 130 }}>
-                      <label style={{ fontSize: 11, fontWeight: 700, color: colors.grayNeutral }}>
-                        Subtotal
-                      </label>
-                      <div style={{ padding: "10px 0", fontWeight: 600 }}>
-                        ₲ {(valor * l.cantidad).toLocaleString("es-PY")}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      className="btn btn-danger"
-                      disabled={lineas.length === 1}
-                      onClick={() => setLineas((prev) => prev.filter((x) => x.key !== l.key))}
-                      style={{ marginLeft: "auto" }}
+
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 10,
+                        alignItems: "flex-end",
+                      }}
                     >
-                      Quitar
-                    </button>
+                      <div style={{ width: 100 }}>
+                        <label style={{ fontSize: 11, fontWeight: 700, color: colors.grayNeutral }}>
+                          Cantidad
+                        </label>
+                        <input
+                          type="number"
+                          min={1}
+                          value={l.cantidad}
+                          onChange={(e) =>
+                            actualizarLinea(l.key, { cantidad: Number(e.target.value) })
+                          }
+                        />
+                      </div>
+                      <div style={{ width: 130 }}>
+                        <label style={{ fontSize: 11, fontWeight: 700, color: colors.grayNeutral }}>
+                          Valor unitario
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={valor}
+                          onChange={(e) =>
+                            actualizarLinea(l.key, { valor_unitario: Number(e.target.value) })
+                          }
+                        />
+                      </div>
+                      <div style={{ width: 130 }}>
+                        <label style={{ fontSize: 11, fontWeight: 700, color: colors.grayNeutral }}>
+                          Subtotal
+                        </label>
+                        <div style={{ padding: "10px 0", fontWeight: 600 }}>
+                          ₲ {(valor * l.cantidad).toLocaleString("es-PY")}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        className="btn btn-danger"
+                        onClick={() => setLineas((prev) => prev.filter((x) => x.key !== l.key))}
+                        style={{ marginLeft: "auto" }}
+                      >
+                        Quitar
+                      </button>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
 
           <div style={{ textAlign: "right", fontWeight: 700, marginTop: 8, color: colors.purpleDark }}>
             Total: ₲ {total.toLocaleString("es-PY")}

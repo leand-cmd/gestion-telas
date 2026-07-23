@@ -434,6 +434,12 @@ tr:hover td {
     min-height: 44px;
   }
 
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+  }
+
   table {
     font-size: 13px;
   }

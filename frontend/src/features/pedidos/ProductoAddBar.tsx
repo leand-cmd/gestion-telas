@@ -1,13 +1,12 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import type { Coleccion, Producto } from "../../api/types";
 import { colors } from "../../theme/colors";
 
-interface ProductoSearchSelectProps {
+interface ProductoAddBarProps {
   productos: Producto[];
   coleccionPorId: Map<number, Coleccion>;
-  value: number;
-  onChange: (id: number) => void;
+  onAdd: (producto: Producto) => void;
 }
 
 const MAX_RESULTADOS = 10;
@@ -26,15 +25,10 @@ function highlight(text: string, query: string) {
   );
 }
 
-export function ProductoSearchSelect({
-  productos,
-  coleccionPorId,
-  value,
-  onChange,
-}: ProductoSearchSelectProps) {
-  const seleccionado = productos.find((p) => p.id === value) ?? null;
-  const [query, setQuery] = useState(seleccionado?.cod_producto ?? "");
+export function ProductoAddBar({ productos, coleccionPorId, onAdd }: ProductoAddBarProps) {
+  const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const formatPrecio = (v: number | null) => (v != null ? `₲ ${v.toLocaleString("es-PY")}` : "-");
   const nombreColeccion = (p: Producto) =>
@@ -57,30 +51,49 @@ export function ProductoSearchSelect({
   })();
 
   const seleccionar = (p: Producto) => {
-    onChange(p.id);
-    setQuery(p.cod_producto);
+    onAdd(p);
+    setQuery("");
     setOpen(false);
+    inputRef.current?.focus();
   };
 
   return (
-    <div>
-      <input
-        value={query}
-        placeholder="Cod producto, colección, categoría, color..."
-        onChange={(e) => {
-          setQuery(e.target.value);
-          setOpen(true);
-          if (e.target.value.trim() === "") onChange(0);
-        }}
-        onFocus={() => setOpen(true)}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
-      />
+    <div className="card" style={{ padding: 12, border: `1px solid ${colors.purplePrimary}` }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <input
+          ref={inputRef}
+          value={query}
+          placeholder="Buscar producto por código, colección, categoría, color..."
+          style={{ fontSize: 16, padding: "14px 16px" }}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => setTimeout(() => setOpen(false), 150)}
+        />
+        <div
+          aria-hidden
+          style={{
+            flexShrink: 0,
+            width: 44,
+            height: 44,
+            borderRadius: 12,
+            background: colors.gradientBackground,
+            color: colors.white,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 20,
+            fontWeight: 700,
+          }}
+        >
+          +
+        </div>
+      </div>
 
       {open && resultados.length > 0 && (
-        <div
-          className="card"
-          style={{ marginTop: 6, padding: 6, maxHeight: 280, overflowY: "auto" }}
-        >
+        <div style={{ marginTop: 10, maxHeight: 320, overflowY: "auto" }}>
           {resultados.map((p) => (
             <div
               key={p.id}
@@ -89,13 +102,14 @@ export function ProductoSearchSelect({
                 seleccionar(p);
               }}
               style={{
-                padding: "8px 10px",
+                padding: "10px 12px",
                 borderRadius: 10,
                 cursor: "pointer",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
                 gap: 8,
+                minHeight: 44,
               }}
               onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(108,93,209,0.08)")}
               onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
@@ -111,6 +125,12 @@ export function ProductoSearchSelect({
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {open && q && resultados.length === 0 && (
+        <div style={{ marginTop: 10, padding: "8px 12px", fontSize: 13, color: colors.grayNeutral }}>
+          Sin resultados para "{query}"
         </div>
       )}
     </div>
