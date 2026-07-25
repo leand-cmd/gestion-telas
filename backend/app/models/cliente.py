@@ -3,12 +3,24 @@ from datetime import datetime, timezone
 from app.extensions import db
 
 CANALES = (
-    "Línea Uniformes",
-    "Línea Deportivo",
-    "Línea Casual",
-    "Línea Eventos",
-    "Línea Multicanal",
+    "Mayorista",
+    "Minorista",
+    "Alta Costura",
+    "Deportivo",
+    "Uniformes",
 )
+SUBCANALES_POR_CANAL = {
+    "Mayorista": ("Distribuidor nacional", "Distribuidor internacional", "Importador"),
+    "Minorista": ("Tienda física", "Tienda online", "Showroom"),
+    "Alta Costura": ("Diseñador independiente", "Atelier", "Boutique exclusiva"),
+    "Deportivo": ("Marca deportiva", "Fabricante ropa deportiva", "Distribuidor deportivo"),
+    "Uniformes": (
+        "Uniformes médicos",
+        "Uniformes oficina",
+        "Uniformes industriales",
+        "Uniformes escolares",
+    ),
+}
 TIPOS_COMPRA = ("Contado", "Credito", "Cheque")
 
 

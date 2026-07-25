@@ -1,6 +1,6 @@
-from marshmallow import Schema, fields, pre_load, validate
+from marshmallow import Schema, ValidationError, fields, pre_load, validate, validates_schema
 
-from app.models.cliente import CANALES, TIPOS_COMPRA
+from app.models.cliente import CANALES, SUBCANALES_POR_CANAL, TIPOS_COMPRA
 
 CAMPOS_OPCIONALES_NORMALIZABLES = (
     "codigo_cliente",
@@ -47,6 +47,18 @@ class ClienteSchema(Schema):
             if data.get(campo) == "":
                 data[campo] = None
         return data
+
+    @validates_schema
+    def validar_sub_canal(self, data, **kwargs):
+        canal = data.get("canal")
+        sub_canal = data.get("sub_canal")
+        if not canal or not sub_canal:
+            return
+        opciones = SUBCANALES_POR_CANAL.get(canal, ())
+        if sub_canal not in opciones:
+            raise ValidationError(
+                {"sub_canal": [f"Sub canal inválido para el canal '{canal}'"]}
+            )
 
 
 cliente_schema = ClienteSchema()

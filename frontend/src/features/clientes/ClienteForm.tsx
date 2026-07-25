@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 
 import type { Cliente } from "../../api/types";
 import { colors } from "../../theme/colors";
-import { CANALES, TIPOS_COMPRA } from "./canalOptions";
+import { CANALES, SUBCANALES_POR_CANAL, TIPOS_COMPRA } from "./canalOptions";
 import { createCliente, fetchNextClienteId, updateCliente, type ClienteInput } from "./clientesApi";
 import { MapPicker } from "./MapPicker";
 
@@ -57,6 +57,7 @@ export function ClienteForm({ cliente, onClose, onSaved }: ClienteFormProps) {
         ...form,
         ruc: form.ruc || null,
         canal: form.canal || null,
+        sub_canal: form.sub_canal || null,
         tipo_compra: form.tipo_compra || null,
         email: form.email || null,
       };
@@ -160,9 +161,9 @@ export function ClienteForm({ cliente, onClose, onSaved }: ClienteFormProps) {
             <select
               id="canal"
               value={form.canal ?? ""}
-              onChange={(e) => setForm({ ...form, canal: e.target.value })}
+              onChange={(e) => setForm({ ...form, canal: e.target.value, sub_canal: "" })}
             >
-              <option value="">Seleccionar...</option>
+              <option value="">Seleccionar canal...</option>
               {CANALES.map((c) => (
                 <option key={c} value={c}>
                   {c}
@@ -170,14 +171,25 @@ export function ClienteForm({ cliente, onClose, onSaved }: ClienteFormProps) {
               ))}
             </select>
           </div>
-          <div>
-            <label htmlFor="sub_canal">Sub Canal</label>
-            <input
-              id="sub_canal"
-              value={form.sub_canal ?? ""}
-              onChange={(e) => setForm({ ...form, sub_canal: e.target.value })}
-            />
-          </div>
+          {form.canal && (
+            <div>
+              <label htmlFor="sub_canal">Sub Canal</label>
+              <select
+                id="sub_canal"
+                value={form.sub_canal ?? ""}
+                onChange={(e) => setForm({ ...form, sub_canal: e.target.value })}
+              >
+                <option value="">Seleccionar subcanal...</option>
+                {(SUBCANALES_POR_CANAL[form.canal as keyof typeof SUBCANALES_POR_CANAL] ?? []).map(
+                  (sub) => (
+                    <option key={sub} value={sub}>
+                      {sub}
+                    </option>
+                  )
+                )}
+              </select>
+            </div>
+          )}
           <div>
             <label htmlFor="tipo_compra">Tipo Compra</label>
             <select
