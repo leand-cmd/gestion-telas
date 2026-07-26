@@ -7,6 +7,8 @@ class Producto(db.Model):
     __tablename__ = "productos"
 
     id = db.Column(db.Integer, primary_key=True)
+    sku = db.Column(db.String(30), unique=True, nullable=True, index=True)
+    nombre = db.Column(db.String(200), nullable=True)
     cod_producto = db.Column(db.String(20), unique=True, nullable=False, index=True)
     proveedor = db.Column(db.String(50))
     marca = db.Column(db.String(50))
@@ -42,6 +44,8 @@ class Producto(db.Model):
     def to_dict(self) -> dict:
         return {
             "id": self.id,
+            "sku": self.sku,
+            "nombre": self.nombre,
             "cod_producto": self.cod_producto,
             "proveedor": self.proveedor,
             "marca": self.marca,
