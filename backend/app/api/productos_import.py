@@ -1,12 +1,22 @@
 """Importación masiva del Maestro de Productos Karretel.
 
-POST /api/productos/import/karretel
-  Acepta multipart/form-data con campo 'file' (.xlsx).
-  Crea/actualiza Grupos, Colecciones y Productos.
-  Identifica productos por SKU: inserta si no existe, actualiza si ya existe.
+Rutas:
+  POST /api/productos/import-maestro
+    Lee Maestro_Productos_Karretel.xlsx desde el filesystem del servidor.
+    Usada en Railway: el archivo viaja en el repositorio/imagen.
+
+  POST /api/productos/import/karretel
+    Acepta multipart/form-data con campo 'file' (.xlsx).
+    Usada en desarrollo o para re-importar desde otro archivo.
+
+Lógica compartida:
+  - Crea Grupos (por Cod_Grupo), Colecciones (por nombre) y Productos (por SKU).
+  - Si el SKU ya existe, actualiza precios/stock.
+  - Si el SKU es nuevo, inserta el producto.
 """
 
 import io
+import os
 
 import openpyxl
 from flask import Blueprint, jsonify, request
@@ -19,6 +29,14 @@ from app.models.producto import Producto
 
 productos_import_bp = Blueprint("productos_import", __name__)
 
+# Ruta del Excel bundleado con el proyecto (Railway lo tiene en /app/)
+_EXCEL_DEFAULT = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+    "Maestro_Productos_Karretel.xlsx",
+)
+
+
+# ── helpers ──────────────────────────────────────────────────────────────────
 
 def _str(val) -> str:
     return str(val).strip() if val is not None else ""
@@ -53,24 +71,10 @@ def _leer_excel(raw_bytes: bytes) -> list[dict]:
     ]
 
 
-@productos_import_bp.post("/karretel")
-@jwt_required()
-def importar_karretel():
-    file = request.files.get("file")
-    if not file or not file.filename:
-        return jsonify({"error": "Se requiere un archivo Excel (.xlsx)"}), 400
+def _ejecutar_import(rows: list[dict]) -> dict:
+    """Lógica de import compartida. Recibe filas ya parseadas, retorna reporte."""
 
-    filename = (file.filename or "").lower()
-    if not (filename.endswith(".xlsx") or filename.endswith(".xls")):
-        return jsonify({"error": "Formato no soportado. Use .xlsx"}), 400
-
-    raw = file.read()
-    try:
-        rows = _leer_excel(raw)
-    except Exception as exc:
-        return jsonify({"error": f"No se pudo leer el archivo: {exc}"}), 400
-
-    # Pre-load existing records to avoid autoflush conflicts during loop
+    # Pre-carga completa para evitar autoflush conflicts durante el loop
     existing_sku: dict = {
         p.sku: p for p in Producto.query.filter(Producto.sku.isnot(None)).all()
     }
@@ -100,7 +104,7 @@ def importar_karretel():
                 errors.append({"fila": idx, "error": "SKU vacío"})
                 continue
 
-            # Grupo
+            # ── Grupo ─────────────────────────────────────────────────────
             gk = cod_grupo.lower()
             if gk not in existing_grupos:
                 g = Grupo(cod_grupo=cod_grupo, nombre=nombre_grupo)
@@ -109,7 +113,7 @@ def importar_karretel():
                 existing_grupos[gk] = g
             grupo = existing_grupos[gk]
 
-            # Coleccion
+            # ── Coleccion ──────────────────────────────────────────────────
             ck = nombre_coleccion.lower()
             if ck not in existing_cols:
                 c = Coleccion(nombre=nombre_coleccion, grupo_id=grupo.id)
@@ -118,7 +122,7 @@ def importar_karretel():
                 existing_cols[ck] = c
             coleccion = existing_cols[ck]
 
-            # Producto — deduplica por SKU
+            # ── Producto — deduplica por SKU ───────────────────────────────
             if sku in existing_sku:
                 p = existing_sku[sku]
                 p.nombre = nombre_producto or p.nombre
@@ -131,7 +135,7 @@ def importar_karretel():
                 updated += 1
                 continue
 
-            # Colision en cod_producto: producto preexistente sin SKU con mismo cod
+            # Producto preexistente sin SKU cuyo cod_producto coincide con el nuevo SKU
             if sku in existing_cod:
                 p = existing_cod[sku]
                 if p.sku is None:
@@ -171,12 +175,57 @@ def importar_karretel():
 
     db.session.commit()
 
-    return jsonify({
+    return {
         "total_filas": len(rows),
         "insertados": inserted,
         "actualizados": updated,
         "errores": errors,
         "cantidad_errores": len(errors),
-        "grupos_procesados": len(existing_grupos),
-        "colecciones_procesadas": len(existing_cols),
-    })
+        "grupos_en_db": Grupo.query.count(),
+        "colecciones_en_db": Coleccion.query.count(),
+        "productos_en_db": Producto.query.count(),
+    }
+
+
+# ── rutas ─────────────────────────────────────────────────────────────────────
+
+@productos_import_bp.post("/import-maestro")
+@jwt_required()
+def importar_maestro():
+    """Lee el Excel desde el filesystem del servidor (Railway o local)."""
+    excel_path = request.args.get("path") or _EXCEL_DEFAULT
+
+    if not os.path.isfile(excel_path):
+        return jsonify({
+            "error": f"Archivo no encontrado: {excel_path}",
+            "sugerencia": "Suba el archivo con POST /api/productos/import/karretel",
+        }), 404
+
+    try:
+        with open(excel_path, "rb") as f:
+            raw = f.read()
+        rows = _leer_excel(raw)
+    except Exception as exc:
+        return jsonify({"error": f"No se pudo leer el archivo: {exc}"}), 400
+
+    return jsonify(_ejecutar_import(rows))
+
+
+@productos_import_bp.post("/import/karretel")
+@jwt_required()
+def importar_karretel():
+    """Acepta el Excel como multipart/form-data campo 'file'."""
+    file = request.files.get("file")
+    if not file or not file.filename:
+        return jsonify({"error": "Se requiere un archivo Excel (.xlsx)"}), 400
+
+    filename = (file.filename or "").lower()
+    if not (filename.endswith(".xlsx") or filename.endswith(".xls")):
+        return jsonify({"error": "Formato no soportado. Use .xlsx"}), 400
+
+    try:
+        rows = _leer_excel(file.read())
+    except Exception as exc:
+        return jsonify({"error": f"No se pudo leer el archivo: {exc}"}), 400
+
+    return jsonify(_ejecutar_import(rows))
