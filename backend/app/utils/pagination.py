@@ -1,7 +1,7 @@
 from flask import request
 
 
-def paginate(query, default_per_page: int = 20, max_per_page: int = 100):
+def paginate(query, default_per_page: int = 20, max_per_page: int = 1000):
     try:
         page = max(int(request.args.get("page", 1)), 1)
     except ValueError:

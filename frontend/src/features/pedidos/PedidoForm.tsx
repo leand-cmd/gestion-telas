@@ -50,7 +50,7 @@ export function PedidoForm({ pedido, onClose, onSaved }: PedidoFormProps) {
   });
   const { data: productosData } = useQuery({
     queryKey: ["productos-select"],
-    queryFn: () => fetchProductos({ page: 1, per_page: 200 }),
+    queryFn: () => fetchProductos({ page: 1, per_page: 1000 }),
   });
   const { data: coleccionesData } = useQuery({
     queryKey: ["colecciones"],

@@ -40,7 +40,10 @@ export function ProductoAddBar({ productos, coleccionPorId, onAdd }: ProductoAdd
     const matches = productos.filter(
       (p) =>
         p.cod_producto.toLowerCase().includes(q) ||
+        (p.sku ?? "").toLowerCase().includes(q) ||
+        (p.nombre ?? "").toLowerCase().includes(q) ||
         nombreColeccion(p).toLowerCase().includes(q) ||
+        (p.marca ?? "").toLowerCase().includes(q) ||
         p.categoria.toLowerCase().includes(q) ||
         (p.color_general ?? "").toLowerCase().includes(q) ||
         (p.descripcion ?? "").toLowerCase().includes(q)
@@ -63,7 +66,7 @@ export function ProductoAddBar({ productos, coleccionPorId, onAdd }: ProductoAdd
         <input
           ref={inputRef}
           value={query}
-          placeholder="Buscar producto por código, colección, categoría, color..."
+          placeholder="Buscar producto por código, nombre, marca, colección, categoría, color..."
           style={{ fontSize: 16, padding: "14px 16px" }}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -117,6 +120,7 @@ export function ProductoAddBar({ productos, coleccionPorId, onAdd }: ProductoAdd
               <div>
                 <div style={{ fontWeight: 700, fontSize: 15 }}>{highlight(p.cod_producto, q)}</div>
                 <div style={{ fontSize: 12, color: colors.grayNeutral }}>
+                  {p.nombre ? `${p.nombre} · ` : ""}
                   {nombreColeccion(p)} · {p.categoria} · {p.color_general ?? "-"}
                 </div>
               </div>
