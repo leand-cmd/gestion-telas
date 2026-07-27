@@ -26,6 +26,7 @@ class Producto(db.Model):
     precio_rollo = db.Column(db.Float)
     precio_media_rollo = db.Column(db.Float)
     precio_corte = db.Column(db.Float)
+    rend = db.Column(db.Float)
     stock_rollos = db.Column(db.Integer, default=0)
     activo = db.Column(db.Boolean, default=True, nullable=False, index=True)
     imagen_url = db.Column(db.String(500))
@@ -63,6 +64,7 @@ class Producto(db.Model):
             "precio_rollo": self.precio_rollo,
             "precio_media_rollo": self.precio_media_rollo,
             "precio_corte": self.precio_corte,
+            "rend": self.rend,
             "stock_rollos": self.stock_rollos,
             "activo": self.activo,
             "imagen_url": self.imagen_url,

@@ -41,6 +41,8 @@ export interface Cliente {
 
 export interface Producto {
   id: number;
+  sku: string | null;
+  nombre: string | null;
   cod_producto: string;
   proveedor: string | null;
   marca: string | null;
@@ -58,6 +60,7 @@ export interface Producto {
   precio_rollo: number | null;
   precio_media_rollo: number | null;
   precio_corte: number | null;
+  rend: number | null;
   stock_rollos: number | null;
   activo: boolean;
   imagen_url: string | null;

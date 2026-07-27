@@ -93,9 +93,15 @@ def _ejecutar_import(rows: list[dict]) -> dict:
             nombre_coleccion = _str(row.get("Coleccion")) or nombre_grupo
             sku = _str(row.get("SKU"))
             nombre_producto = _str(row.get("Nombre_Producto"))
+            cod_color = _str(row.get("Cod_Color")) or None
+            color_descripcion = _str(row.get("Color_Inferido")) or None
+            categoria = _str(row.get("Categoria")) or "Telas"
+            sub_categoria = _str(row.get("Sub_Categoria")) or None
+            marca = _str(row.get("Marca")) or "Karretel"
             precio_rollo = _float_or_none(row.get("Precio_ROLLO"))
             precio_media_rollo = _float_or_none(row.get("Precio_Media_Rollo"))
             precio_corte = _float_or_none(row.get("Precio_CORTE"))
+            rend = _float_or_none(row.get("REND"))
             stock = _int_or_zero(row.get("Stock"))
             activo_raw = row.get("Activo")
             activo = bool(activo_raw) if activo_raw is not None else True
@@ -127,9 +133,15 @@ def _ejecutar_import(rows: list[dict]) -> dict:
                 p = existing_sku[sku]
                 p.nombre = nombre_producto or p.nombre
                 p.coleccion_id = coleccion.id
+                p.cod_color = cod_color or p.cod_color
+                p.color_descripcion = color_descripcion or p.color_descripcion
+                p.categoria = _str(row.get("Categoria")) or p.categoria
+                p.sub_categoria = sub_categoria or p.sub_categoria
+                p.marca = _str(row.get("Marca")) or p.marca
                 p.precio_rollo = precio_rollo
                 p.precio_media_rollo = precio_media_rollo
                 p.precio_corte = precio_corte
+                p.rend = rend if rend is not None else p.rend
                 p.stock_rollos = stock
                 p.activo = activo
                 updated += 1
@@ -142,9 +154,15 @@ def _ejecutar_import(rows: list[dict]) -> dict:
                     p.sku = sku
                     p.nombre = nombre_producto or p.nombre
                     p.coleccion_id = coleccion.id
+                    p.cod_color = cod_color or p.cod_color
+                    p.color_descripcion = color_descripcion or p.color_descripcion
+                    p.categoria = _str(row.get("Categoria")) or p.categoria
+                    p.sub_categoria = sub_categoria or p.sub_categoria
+                    p.marca = _str(row.get("Marca")) or p.marca
                     p.precio_rollo = precio_rollo
                     p.precio_media_rollo = precio_media_rollo
                     p.precio_corte = precio_corte
+                    p.rend = rend if rend is not None else p.rend
                     p.stock_rollos = stock
                     p.activo = activo
                     existing_sku[sku] = p
@@ -159,13 +177,17 @@ def _ejecutar_import(rows: list[dict]) -> dict:
                 nombre=nombre_producto,
                 cod_producto=sku,
                 coleccion_id=coleccion.id,
+                cod_color=cod_color,
+                color_descripcion=color_descripcion,
+                categoria=categoria,
+                sub_categoria=sub_categoria,
                 precio_rollo=precio_rollo,
                 precio_media_rollo=precio_media_rollo,
                 precio_corte=precio_corte,
+                rend=rend,
                 stock_rollos=stock,
                 activo=activo,
-                categoria="Telas",
-                marca="Karretel",
+                marca=marca,
                 proveedor="Karretel",
             )
             db.session.add(nuevo)

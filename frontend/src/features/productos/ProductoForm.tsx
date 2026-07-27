@@ -14,6 +14,8 @@ interface ProductoFormProps {
 }
 
 const EMPTY: ProductoInput = {
+  sku: "",
+  nombre: "",
   cod_producto: "",
   proveedor: "",
   marca: "",
@@ -31,6 +33,7 @@ const EMPTY: ProductoInput = {
   precio_rollo: null,
   precio_media_rollo: null,
   precio_corte: null,
+  rend: null,
   stock_rollos: 0,
   activo: true,
   imagen_url: null,

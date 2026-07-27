@@ -54,10 +54,17 @@ export function ProductosList() {
   };
 
   const formatPrecio = (v: number | null) => (v != null ? `₲ ${v.toLocaleString("es-PY")}` : "-");
+  const formatNumero = (v: number | null) => (v != null ? v.toLocaleString("es-PY") : "-");
 
   const columns: Column<Producto>[] = [
     { header: "Cod Producto", render: (p) => p.cod_producto },
     { header: "Marca", render: (p) => p.marca ?? "-" },
+    {
+      header: "Nombre Producto",
+      render: (p) => p.nombre ?? "-",
+      truncate: true,
+      minWidth: 180,
+    },
     {
       header: "Colección",
       render: (p) => (p.coleccion_id != null ? coleccionPorId.get(p.coleccion_id)?.nombre : null) ?? "-",
@@ -74,6 +81,9 @@ export function ProductosList() {
     { header: "Categoría", render: (p) => p.categoria, truncate: true, minWidth: 140 },
     { header: "Sub Categoría", render: (p) => p.sub_categoria ?? "-", truncate: true, minWidth: 140 },
     { header: "Precio Rollo", render: (p) => formatPrecio(p.precio_rollo) },
+    { header: "1/2 Rollo", render: (p) => formatPrecio(p.precio_media_rollo) },
+    { header: "Precio Corte", render: (p) => formatPrecio(p.precio_corte) },
+    { header: "Rend", render: (p) => formatNumero(p.rend) },
     { header: "Stock", render: (p) => p.stock_rollos ?? 0 },
     {
       header: "Activo",

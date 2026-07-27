@@ -3,6 +3,8 @@ from marshmallow import Schema, fields, validate
 
 class ProductoSchema(Schema):
     id = fields.Integer(dump_only=True)
+    sku = fields.String(allow_none=True, load_default=None, validate=validate.Length(max=30))
+    nombre = fields.String(allow_none=True, load_default=None, validate=validate.Length(max=200))
     cod_producto = fields.String(required=True, validate=validate.Length(min=1, max=20))
     proveedor = fields.String(allow_none=True, load_default=None)
     marca = fields.String(allow_none=True, load_default=None)
@@ -20,6 +22,7 @@ class ProductoSchema(Schema):
     precio_rollo = fields.Float(allow_none=True, load_default=None)
     precio_media_rollo = fields.Float(allow_none=True, load_default=None)
     precio_corte = fields.Float(allow_none=True, load_default=None)
+    rend = fields.Float(allow_none=True, load_default=None)
     stock_rollos = fields.Integer(allow_none=True, load_default=0)
     activo = fields.Boolean(load_default=True)
     imagen_url = fields.String(allow_none=True, load_default=None)
