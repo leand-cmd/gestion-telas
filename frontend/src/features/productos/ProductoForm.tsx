@@ -265,6 +265,18 @@ export function ProductoForm({ producto, onClose, onSaved }: ProductoFormProps) 
             />
           </div>
           <div>
+            <label htmlFor="rend">REND</label>
+            <input
+              id="rend"
+              type="number"
+              step="0.01"
+              value={form.rend ?? ""}
+              onChange={(e) =>
+                setForm({ ...form, rend: e.target.value ? Number(e.target.value) : null })
+              }
+            />
+          </div>
+          <div>
             <label htmlFor="stock_rollos">Stock (rollos)</label>
             <input
               id="stock_rollos"
