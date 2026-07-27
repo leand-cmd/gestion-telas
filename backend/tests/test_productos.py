@@ -63,6 +63,46 @@ def test_search_productos(client, auth_headers):
     assert data["items"][0]["cod_producto"] == "TEL-200"
 
 
+def test_sku_vacio_se_autogenera_y_no_colisiona(client, auth_headers):
+    resp1 = client.post(
+        "/api/productos",
+        json=producto_payload(cod="TEL-900") | {"sku": ""},
+        headers=auth_headers,
+    )
+    assert resp1.status_code == 201
+    assert resp1.get_json()["sku"] == "TEL-900-AZ01"
+
+    # Sin cod_color: el sku generado cae de nuevo en el cod_producto solo.
+    resp2 = client.post(
+        "/api/productos",
+        json=producto_payload(cod="TEL-901") | {"sku": "", "cod_color": None},
+        headers=auth_headers,
+    )
+    assert resp2.status_code == 201
+    assert resp2.get_json()["sku"] == "TEL-901"
+
+    # Dos productos con sku vacio en el payload no deben colisionar entre si.
+    resp3 = client.post(
+        "/api/productos",
+        json=producto_payload(cod="TEL-902") | {"sku": "", "cod_color": None},
+        headers=auth_headers,
+    )
+    assert resp3.status_code == 201
+    assert resp3.get_json()["sku"] == "TEL-902"
+
+
+def test_actualizar_producto_sku_vacio_se_autogenera(client, auth_headers):
+    producto_id = client.post(
+        "/api/productos", json=producto_payload(cod="TEL-903"), headers=auth_headers
+    ).get_json()["id"]
+
+    resp = client.put(
+        f"/api/productos/{producto_id}", json={"sku": ""}, headers=auth_headers
+    )
+    assert resp.status_code == 200
+    assert resp.get_json()["sku"] == "TEL-903-AZ01"
+
+
 def test_asignar_coleccion_a_producto(client, auth_headers):
     coleccion_id = client.post(
         "/api/colecciones", json={"nombre": "TUL Frances"}, headers=auth_headers

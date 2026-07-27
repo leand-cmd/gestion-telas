@@ -42,6 +42,16 @@ CSV_COLUMNS = [
 ]
 
 
+def _generar_sku(cod_producto: str, cod_color: str | None) -> str:
+    """Genera un SKU derivado cuando el usuario no cargo uno.
+
+    cod_producto ya es unico (constraint propia), asi que el resultado
+    tambien lo es sin necesidad de chequear colisiones."""
+    if cod_color:
+        return f"{cod_producto}-{cod_color}"
+    return cod_producto
+
+
 def _resolver_coleccion_id(nombre_coleccion: str) -> int | None:
     """Busca una Coleccion por nombre (case-insensitive); si no existe, la
     crea (sin imagen todavia) para que el producto quede enganchado por FK."""
@@ -116,6 +126,9 @@ def crear_producto():
     if data.get("coleccion_id") is not None and not db.session.get(Coleccion, data["coleccion_id"]):
         return jsonify({"error": "La colección indicada no existe"}), 400
 
+    if not data.get("sku"):
+        data["sku"] = _generar_sku(data["cod_producto"], data.get("cod_color"))
+
     producto = Producto(**data)
     db.session.add(producto)
     db.session.commit()
@@ -174,6 +187,11 @@ def actualizar_producto(producto_id):
 
     if data.get("coleccion_id") is not None and not db.session.get(Coleccion, data["coleccion_id"]):
         return jsonify({"error": "La colección indicada no existe"}), 400
+
+    if "sku" in data and not data["sku"]:
+        cod_producto = data.get("cod_producto", producto.cod_producto)
+        cod_color = data.get("cod_color", producto.cod_color)
+        data["sku"] = _generar_sku(cod_producto, cod_color)
 
     for key, value in data.items():
         setattr(producto, key, value)
